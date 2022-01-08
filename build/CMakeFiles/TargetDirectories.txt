@@ -1,0 +1,6 @@
+C:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build/hello/CMakeFiles/hello.dir
+C:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build/hello/CMakeFiles/ALL_BUILD.dir
+C:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build/apps/CMakeFiles/main.dir
+C:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build/apps/CMakeFiles/ALL_BUILD.dir

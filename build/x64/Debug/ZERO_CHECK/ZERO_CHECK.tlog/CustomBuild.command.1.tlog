@@ -1,0 +1,10 @@
+^C:\USERS\ADMIN\DESKTOP\CSPROJECTS\VSCODE-CMAKE-HELLO\BUILD\CMAKEFILES\07455DB1A3DE69FA683BEF63A31E8BE1\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello -BC:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Admin/Desktop/CSProjects/vscode-cmake-hello/build/VscodeCmakeHello.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
