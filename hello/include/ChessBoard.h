@@ -76,9 +76,13 @@ public:
     //Added after integrating with Qt:
     //Checks if a square has an opponent's piece attacking it (all directions + knights)
     bool NotInCheck(int square);
+    //Castle kingside and queenside:
+    bool CastleKingside();
+    bool CastleQueenside();
     
 private:
-    int board_[8][8]; //board[row][col]
+    std::array<std::array<int, 8>, 8> board_;
+    //int board_[8][8]; //board[row][col]
     //Store locations of all pieces to make it easier to make moves
     //Store all vectors in the piece_map
     //For convenience, kings are also in vectors

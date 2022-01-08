@@ -20,8 +20,24 @@ bool Board::Move(string move) {
     //std::cout <<square<<std::endl;
     //Depending on first character of string, move the specified piece
     if(!isLegalSquare(square)) return false;
-    if(move == "0-0" || move == "0-0-0") {
 
+    //Update who is in check
+    if(NotInCheck(black_king_.at(0).square)) {
+        black_in_check_ = false;
+    } else {
+        black_in_check_ = true;
+    }
+    if(NotInCheck(white_king_.at(0).square)) {
+        white_in_check_ = false;
+    } else {
+        white_in_check_ = true;
+    }
+
+    if(move == "0-0") {
+        return CastleKingside();
+    }
+    if(move == "0-0-0") {
+        return CastleQueenside();
     }
     if(move.size() == 2) {
         return MovePawn(square);
