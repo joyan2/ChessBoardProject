@@ -1,0 +1,5 @@
+Make sure king is not in check after piece moves
+Make sure that if king is currently in check, the move blocks the check
+Add castling, making sure that king is never in check
+Add pawn captures
+Add pawn promotions
