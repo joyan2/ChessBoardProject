@@ -75,10 +75,12 @@ public:
     bool WhoseMove();
     //Added after integrating with Qt:
     //Checks if a square has an opponent's piece attacking it (all directions + knights)
-    bool NotInCheck(int square);
+    bool NotInCheck(int square, std::array<std::array<int, 8>, 8> &board);
     //Castle kingside and queenside:
     bool CastleKingside();
     bool CastleQueenside();
+    bool WhiteInCheck();
+    bool BlackInCheck();
     
 private:
     std::array<std::array<int, 8>, 8> board_;
@@ -108,15 +110,18 @@ private:
     //Store whose turn to move.
     bool white_move;
 
+    //Use a copy board
+    bool KingNotInCheckAfterMove(int source_square, int destination_square, std::array<std::array<int, 8>, 8> board);
+
     //Added after integrating with Qt:
     //Helper functions for NotInCheck() that check diagonals, ranks, and files.
     //Returns true if there is a check, false if there is no check
-    bool CheckFromBottomLeftDiag(int square);
-    bool CheckFromTopRightDiag(int square);
-    bool CheckFromBottomRightDiag(int square);
-    bool CheckFromTopLeftDiag(int square);
-    bool CheckFromBottom(int square); 
-    bool CheckFromTop(int square);
-    bool CheckFromLeft(int square);
-    bool CheckFromRight(int square);
+    bool CheckFromBottomLeftDiag(int square, std::array<std::array<int, 8>, 8> &board);
+    bool CheckFromTopRightDiag(int square, std::array<std::array<int, 8>, 8> &board);
+    bool CheckFromBottomRightDiag(int square, std::array<std::array<int, 8>, 8> &board);
+    bool CheckFromTopLeftDiag(int square, std::array<std::array<int, 8>, 8> &board);
+    bool CheckFromBottom(int square, std::array<std::array<int, 8>, 8> &board); 
+    bool CheckFromTop(int square, std::array<std::array<int, 8>, 8> &board);
+    bool CheckFromLeft(int square, std::array<std::array<int, 8>, 8> &board);
+    bool CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board);
 };

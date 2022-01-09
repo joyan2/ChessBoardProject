@@ -15,6 +15,7 @@ const int king = 10;
 const int ONE_COL = 8;
 const int ONE_ROW = 1;
 bool Board::Move(string move) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     if(move.size() < 2) return false;
     string square = move.substr(move.size()-2);
     //std::cout <<square<<std::endl;
@@ -22,16 +23,23 @@ bool Board::Move(string move) {
     if(!isLegalSquare(square)) return false;
 
     //Update who is in check
-    if(NotInCheck(black_king_.at(0).square)) {
-        black_in_check_ = false;
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    if(white_move) {
+        if(NotInCheck(white_king_.at(0).square, board_)) {
+            white_in_check_ = false;
+        } else {
+            std::cout << "white in check";
+            white_in_check_ = true;
+        }
     } else {
-        black_in_check_ = true;
+        if(NotInCheck(black_king_.at(0).square, board_)) {
+            black_in_check_ = false;
+        } else {
+            std::cout << "black in check";
+            black_in_check_ = true;
+        }
     }
-    if(NotInCheck(white_king_.at(0).square)) {
-        white_in_check_ = false;
-    } else {
-        white_in_check_ = true;
-    }
+
 
     if(move == "0-0") {
         return CastleKingside();
@@ -40,6 +48,7 @@ bool Board::Move(string move) {
         return CastleQueenside();
     }
     if(move.size() == 2) {
+        std::cout << "Reached line " << __LINE__ << std::endl;
         return MovePawn(square);
     } else if(toupper(move.at(0)) == 'N') {
         return MoveKnight(move.substr(1));
@@ -56,6 +65,7 @@ bool Board::Move(string move) {
 }
 //Does NOT deal with captures.
 bool Board::MovePawn(string destination) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     //Example input: e4.
     char row = destination.at(destination.size() - 2);
     int col = std::stoi(destination.substr(destination.size() - 1));
@@ -74,6 +84,10 @@ bool Board::MovePawn(string destination) {
                 //std::cout << p->square << std::endl;
                 //If pawn one square below destination, update pawn on board
                 if(p->square == destination_square - ONE_COL) {
+                    std::cout << "Reached line " << __LINE__ << std::endl;
+                    std::array<std::array<int, 8>, 8> board = board_;
+                    std::cout << board[2][5];
+                    if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
                     return true;
                 } else if(p->square == destination_square - ONE_COL*2) {
@@ -82,6 +96,8 @@ bool Board::MovePawn(string destination) {
                         continue;
                     } else {
                         //std::cout << board_[(destination_square - ONE_COL*2) %8][(destination_square - ONE_COL*2)/8] <<std::endl;
+                        std::array<std::array<int, 8>, 8> board = board_;
+                        if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                         UpdatePiece(p, destination_square);
                         return true;
                     }
@@ -99,6 +115,8 @@ bool Board::MovePawn(string destination) {
             for(int i = 0; i < matching_pieces->size(); i++) {
                 Piece* p = &matching_pieces->at(i);
                 if(p->square == destination_square - ONE_COL) {
+                    std::array<std::array<int, 8>, 8> board = board_;
+                    if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
                     return true;
                 }
@@ -120,6 +138,8 @@ bool Board::MovePawn(string destination) {
                 //std::cout << p.square << std::endl;
                 //If pawn one square below destination, update pawn on board
                 if(p->square == destination_square + ONE_COL) {
+                    std::array<std::array<int, 8>, 8> board = board_;
+                    if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
                     return true;
                 } else if(p->square == destination_square + ONE_COL*2) {
@@ -128,6 +148,8 @@ bool Board::MovePawn(string destination) {
                         continue;
                     } else {
                         //std::cout << board_[(destination_square - ONE_COL*2) %8][(destination_square - ONE_COL*2)/8] <<std::endl;
+                        std::array<std::array<int, 8>, 8> board = board_;
+                        if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                         UpdatePiece(p, destination_square);
                         return true;
                     }
@@ -145,6 +167,8 @@ bool Board::MovePawn(string destination) {
             for(int i = 0; i < matching_pieces->size(); i++) {
                 Piece* p = &matching_pieces->at(i);
                 if(p->square == destination_square + ONE_COL) {
+                    std::array<std::array<int, 8>, 8> board = board_;
+                    if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
                     return true;
                 }
@@ -173,6 +197,8 @@ bool Board::MoveKnight(string destination) {
     for(int i = 0; i < matching_pieces->size(); i++) {
         Piece* p = &matching_pieces->at(i);
         if(FromKnightMoves(p->square, destination_square)) {
+            std::array<std::array<int, 8>, 8> board = board_;
+            if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
             RemovePiece(destination_square);
             UpdatePiece(p, destination_square);
             return true;  
@@ -199,6 +225,8 @@ bool Board::MoveBishop(string destination) {
         //Case: BottomRightDiag to TopLeftDiag
         if(p->square % 7 == destination_square % 7) {
             if(FromBottomRightDiag(p->square, destination_square) || FromTopLeftDiag(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;  
@@ -207,6 +235,8 @@ bool Board::MoveBishop(string destination) {
         //Case: BottomLeftDiag to TopRightDiag
         if(p->square % 9 == destination_square % 9) {
             if(FromBottomLeftDiag(p->square, destination_square) || FromTopRightDiag(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;
@@ -236,6 +266,8 @@ bool Board::MoveRook(string destination) {
         if(p->square % 8 == destination_square % 8) {
             //TODO: Add case handling multiple possible rooks (include FromLeft and FromRight)
             if(FromBottom(p->square, destination_square) || FromTop(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;
@@ -243,6 +275,8 @@ bool Board::MoveRook(string destination) {
         }
         if(p->square / 8 == destination_square / 8) {
             if(FromLeft(p->square, destination_square) || FromRight(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;
@@ -358,6 +392,8 @@ bool Board::MoveQueen(string destination) {
         //Case: BottomRightDiag to TopLeftDiag
         if(p->square % 7 == destination_square % 7) {
             if(FromBottomRightDiag(p->square, destination_square) || FromTopLeftDiag(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;  
@@ -366,6 +402,8 @@ bool Board::MoveQueen(string destination) {
         //Case: BottomLeftDiag to TopRightDiag
         if(p->square % 9 == destination_square % 9) {
             if(FromBottomLeftDiag(p->square, destination_square) || FromTopRightDiag(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;
@@ -374,6 +412,8 @@ bool Board::MoveQueen(string destination) {
         if(p->square % 8 == destination_square % 8) {
             //TODO: Add case handling multiple possible rooks (include FromLeft and FromRight)
             if(FromBottom(p->square, destination_square) || FromTop(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;
@@ -381,6 +421,8 @@ bool Board::MoveQueen(string destination) {
         }
         if(p->square / 8 == destination_square / 8) {
             if(FromLeft(p->square, destination_square) || FromRight(p->square, destination_square)) {
+                std::array<std::array<int, 8>, 8> board = board_;
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
                 UpdatePiece(p, destination_square);
                 return true;
@@ -389,6 +431,18 @@ bool Board::MoveQueen(string destination) {
     }
     return false;
 }
+bool Board::CastleKingside() {
+    return false;
+}
+bool Board::CastleQueenside() {
+    return false;
+}
+bool Board::WhiteInCheck() {
+    return white_in_check_;
+}
+bool Board::BlackInCheck() {
+    return black_in_check_;
+}
 bool Board::MoveKing(string destination) {
     char row = destination.at(destination.size() - 2);
     int col = std::stoi(destination.substr(destination.size() - 1));
@@ -396,7 +450,7 @@ bool Board::MoveKing(string destination) {
     int destination_square = (col-1) * ONE_COL + (destination_row-1);
 
     //Check if destination square is not in check (even if capturing piece on that square)
-    if(!NotInCheck(destination_square)) return false;
+    if(!NotInCheck(destination_square, board_)) return false;
     int king_color_multiplier = 0;
     if(white_move) {
         king_color_multiplier = 1;
@@ -419,7 +473,31 @@ bool Board::MoveKing(string destination) {
 bool Board::WhoseMove() {
     return white_move;
 }
-bool Board::NotInCheck(int square) {
+bool Board::KingNotInCheckAfterMove(int source_square, int destination_square, std::array<std::array<int, 8>, 8> board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    board[destination_square%8][destination_square/8] = board[source_square%8][source_square/8];
+    board[source_square%8][source_square/8] = 0;
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    int king_color_multiplier = 0;
+    if(white_move) {
+        king_color_multiplier = 1;
+    } else {
+        king_color_multiplier = -1;
+    }
+    int king_square;
+    //get location of player's King
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    if(board[destination_square%8][destination_square/8] == king_color_multiplier*king) {
+        king_square = destination_square;
+    } else {
+        king_square = piece_map[king_color_multiplier*king]->at(0).square;
+    }
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    return NotInCheck(king_square, board);
+    
+}
+bool Board::NotInCheck(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     //Check knight moves:
     int knight_squares[8]; //squares for the knight
     knight_squares[0] = square + 15;
@@ -439,7 +517,7 @@ bool Board::NotInCheck(int square) {
     //Go through each knight square. If an opponent's knight is on square, return false
     for(int knight_square : knight_squares) {
         if(knight_square < 0 || knight_square > 63) continue;
-        if(board_[knight_square%8][knight_square/8] == color_multiplier*knight) return false;
+        if(board[knight_square%8][knight_square/8] == color_multiplier*knight) return false;
     }
     //Check if opponent's king is next to the square, or if opponent's pawn is attacking:
     int king_squares[8];
@@ -453,21 +531,22 @@ bool Board::NotInCheck(int square) {
     king_squares[7] = square - 9;
     for(int i = 0; i < 8; ++i) {
         if(king_squares[i] < 0 || king_squares[i] > 63) continue;
-        if(board_[king_squares[i]%8][king_squares[i]/8] == color_multiplier*king) return false;
+        if(board[king_squares[i]%8][king_squares[i]/8] == color_multiplier*king) return false;
         //Check black pawns if white to move:
-        if(white_move && (i == 2 || i == 6) && board_[king_squares[i]%8][king_squares[i]/8] == color_multiplier*pawn) return false;
+        if(white_move && (i == 2 || i == 6) && board[king_squares[i]%8][king_squares[i]/8] == color_multiplier*pawn) return false;
         //std::cout << "pawn";
         //Check white pawns if black to move:
-        if((!white_move) && (i == 3 || i == 7) && board_[king_squares[i]%8][king_squares[i]/8] == color_multiplier*pawn) return false;
+        if((!white_move) && (i == 3 || i == 7) && board[king_squares[i]%8][king_squares[i]/8] == color_multiplier*pawn) return false;
     }
     //Check if opponent's bishop or queen is attacking through a diagonal.
     //Also check if opponent's rook or queen is attacking through a rank or file:
     //std::cout << "checking rank file";
-    if(CheckFromBottom(square) || CheckFromTop(square) || CheckFromLeft(square) || CheckFromRight(square)
-    || CheckFromBottomLeftDiag(square) || CheckFromBottomRightDiag(square)
-    || CheckFromTopLeftDiag(square) || CheckFromTopRightDiag(square)) return false;
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    if(CheckFromBottom(square, board) || CheckFromTop(square, board) || CheckFromLeft(square, board) || CheckFromRight(square, board)
+    || CheckFromBottomLeftDiag(square, board) || CheckFromBottomRightDiag(square, board)
+    || CheckFromTopLeftDiag(square, board) || CheckFromTopRightDiag(square, board)) return false;
     
-
+    std::cout << "Reached line " << __LINE__ << std::endl;
     return true;
 }
 bool Board::isLegalSquare(string square) {
@@ -496,7 +575,8 @@ bool Board::isLegalSquare(string square) {
     }
     return true;
 }
-bool Board::CheckFromBottomLeftDiag(int square) {
+bool Board::CheckFromBottomLeftDiag(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square - 9;
     int color_multiplier = 0;
     if(white_move) {
@@ -504,18 +584,21 @@ bool Board::CheckFromBottomLeftDiag(int square) {
     } else {
         color_multiplier = 1;
     }
-
-    while(i < 0 || i > 63) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    while(i >= 0 && i <= 63) {
+        std::cout << "Reached line " << __LINE__ << std::endl;
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored bishop/queen, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * bishop
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * bishop
+        || board[i%8][i/8] == color_multiplier * queen) return true;
         i -= 9;
     }
+    std::cout << "Reached line " << __LINE__ << std::endl;
     return false;
 }
-bool Board::CheckFromTopRightDiag(int square) {
+bool Board::CheckFromTopRightDiag(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square + 9;
     int color_multiplier = 0;
     if(white_move) {
@@ -524,17 +607,18 @@ bool Board::CheckFromTopRightDiag(int square) {
         color_multiplier = 1;
     }
 
-    while(i < 0 || i > 63) {
+    while(i >= 0 && i <= 63) {
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored piece, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * bishop
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * bishop
+        || board[i%8][i/8] == color_multiplier * queen) return true;
         i += 9;
     }
     return false;
 }
-bool Board::CheckFromBottomRightDiag(int square) {
+bool Board::CheckFromBottomRightDiag(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square - 7;
     int color_multiplier = 0;
     if(white_move) {
@@ -543,17 +627,18 @@ bool Board::CheckFromBottomRightDiag(int square) {
         color_multiplier = 1;
     }
 
-    while(i < 0 || i > 63) {
+    while(i >= 0 && i <= 63) {
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored piece, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * bishop
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * bishop
+        || board[i%8][i/8] == color_multiplier * queen) return true;
         i -= 7;
     }
     return false;
 }
-bool Board::CheckFromTopLeftDiag(int square) {
+bool Board::CheckFromTopLeftDiag(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square + 7;
     int color_multiplier = 0;
     if(white_move) {
@@ -562,17 +647,22 @@ bool Board::CheckFromTopLeftDiag(int square) {
         color_multiplier = 1;
     }
 
-    while(i < 0 || i > 63) {
+    while(i >= 0 && i <= 63) {
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored piece, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * bishop
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * bishop
+        || board[i%8][i/8] == color_multiplier * queen) {
+            std::cout << i << " ";
+            std::cout << "Reached line " << __LINE__ << std::endl;
+            return true;
+        } 
         i += 7;
     }
     return false;
 }
-bool Board::CheckFromBottom(int square) {
+bool Board::CheckFromBottom(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int file = square % 8;
     int i = square - 8;
     int color_multiplier = 0;
@@ -586,15 +676,16 @@ bool Board::CheckFromBottom(int square) {
         //If out of bounds, can't be in check:
         if(i < 0 || i > 63) return false;
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored piece, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * rook
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * rook
+        || board[i%8][i/8] == color_multiplier * queen) return true;
         i -= 8;
     }
     return false;
 }
-bool Board::CheckFromTop(int square) {
+bool Board::CheckFromTop(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int file = square % 8;
     int i = square + 8;
     int color_multiplier = 0;
@@ -608,15 +699,16 @@ bool Board::CheckFromTop(int square) {
         //If out of bounds, can't be in check:
         if(i < 0 || i > 63) return false;
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored piece, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * rook
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * rook
+        || board[i%8][i/8] == color_multiplier * queen) return true;
         i += 8;
     }
     return false;
 }
-bool Board::CheckFromLeft(int square) {
+bool Board::CheckFromLeft(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int rank = square / 8;
     int i = square - 1;
     int color_multiplier = 0;
@@ -630,15 +722,19 @@ bool Board::CheckFromLeft(int square) {
         //If out of bounds, can't be in check:
         if(i < 0 || i > 63) return false;
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored piece, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * rook
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * rook
+        || board[i%8][i/8] == color_multiplier * queen) {
+            std::cout << board[i%8][i/8] << std::endl;
+            return true;
+        }
         i--;
     }
     return false;
 }
-bool Board::CheckFromRight(int square) {
+bool Board::CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board) {
+    std::cout << "Reached line " << __LINE__ << std::endl;
     int rank = square / 8;
     int i = square + 1;
     int color_multiplier = 0;
@@ -652,10 +748,10 @@ bool Board::CheckFromRight(int square) {
         //If out of bounds, can't be in check:
         if(i < 0 || i > 63) return false;
         //If same-color piece, can't be in check:
-        if(color_multiplier * board_[i%8][i/8] < 0) return false;
+        if(color_multiplier * board[i%8][i/8] < 0) return false;
         //if opposite-colored piece, player is in check:
-        if(board_[i%8][i/8] == color_multiplier * rook
-        || board_[i%8][i/8] == color_multiplier * queen) return true;
+        if(board[i%8][i/8] == color_multiplier * rook
+        || board[i%8][i/8] == color_multiplier * queen) return true;
         i++;
     }
     return false;

@@ -1,7 +1,16 @@
 Handle multiple pieces moving, using standard PGN notation
-Update white_in_check_ and black_in_check_ booleans before each move DONE
+Update white_in_check_  or and black_in_check_ booleans before each move DONE
+
+In Progress:
+Update InCheck() diagonals so it stops at edge of board. Example:
+12->19->26->33->40 reaches the a-file, but keeps going currently because less than 63. 
+Create new function KingNotInCheckAfterMove that updates piece positions in a copy
+board and makes sure the king is not in check afterwards
 Make sure king is not in check after piece moves
-Make sure that if king is currently in check, the move blocks the check
+Make sure that if king is currently in check, the move stops the check
+
+
+
 Add castling, making sure that king is never in check
 Add pawn captures
 Add pawn promotions

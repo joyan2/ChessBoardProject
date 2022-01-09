@@ -28,6 +28,9 @@ int main() {
             case 'w':
                 std::cout << b.WhoseMove() << std::endl;
                 break;
+            case 'c':
+                std::cout << "White in check: " << b.WhiteInCheck() << std::endl;
+                std::cout << "Black in check: " << b.BlackInCheck() << std::endl;
             default:
                 std::cout << "Try again" << std::endl;
                 break;
