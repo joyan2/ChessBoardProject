@@ -661,7 +661,7 @@ bool Board::CastleQueenside() {
             white_move = false; //necessary because UpdatePiece changes this to false
             Piece* r;
             for(Piece rook : black_rooks_) {
-                if(rook.square == 0) {
+                if(rook.square == 56) {
                     r = &rook;
                     UpdatePiece(r, 59);
                     return true;
