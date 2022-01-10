@@ -5,8 +5,8 @@ In Progress:
 Update InCheck() diagonals so it stops at edge of board. Example:
 12->19->26->33->40 reaches the a-file, but keeps going currently because less than 63. 
 Create new function KingNotInCheckAfterMove that updates piece positions in a copy
-board and makes sure the king is not in check afterwards
-Make sure king is not in check after piece moves
+board and makes sure the king is not in check afterwards DONE
+Make sure king is not in check after piece moves DONE
 Make sure that if king is currently in check, the move stops the check
 
 
