@@ -31,6 +31,9 @@ int main() {
             case 'w':
                 std::cout << b.WhoseMove() << std::endl;
                 break;
+            case 'o':
+                b.PrintRookAndKingHaveMoved();
+                break;
             case 'c':
                 std::cout << "White in check: " << b.WhiteInCheck() << std::endl;
                 std::cout << "Black in check: " << b.BlackInCheck() << std::endl;

@@ -83,6 +83,7 @@ public:
     bool BlackInCheck();
     //Print piece locations using the map:
     void PrintPieces();
+    void PrintRookAndKingHaveMoved(); //Prints the bools checking if castling is legal
     
 private:
     std::array<std::array<int, 8>, 8> board_;
@@ -116,6 +117,13 @@ private:
     bool KingNotInCheckAfterMove(int source_square, int destination_square, std::array<std::array<int, 8>, 8> board);
 
     //Added after integrating with Qt:
+    //Booleans to confirm castling is legal:
+    bool white_king_moved_;
+    bool black_king_moved_;
+    bool white_arook_moved_;
+    bool white_hrook_moved_;
+    bool black_arook_moved_;
+    bool black_hrook_moved_;
     //Helper functions for NotInCheck() that check diagonals, ranks, and files.
     //Returns true if there is a check, false if there is no check
     bool CheckFromBottomLeftDiag(int square, std::array<std::array<int, 8>, 8> &board);

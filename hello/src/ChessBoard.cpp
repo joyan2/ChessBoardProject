@@ -20,7 +20,7 @@ bool Board::Move(string move) {
     string square = move.substr(move.size()-2);
     //std::cout <<square<<std::endl;
     //Depending on first character of string, move the specified piece
-    if(!isLegalSquare(square)) return false;
+    
 
     /*//Update who is in check
     std::cout << "Reached line " << __LINE__ << std::endl;
@@ -40,13 +40,36 @@ bool Board::Move(string move) {
         }
     }*/
 
-
+    std::cout << "Reached line " << __LINE__ << std::endl;
     if(move == "0-0") {
-        return CastleKingside();
+        std::cout << "Reached line " << __LINE__ << std::endl;
+        bool castled_kingside = CastleKingside();
+        std::cout << "Reached line " << __LINE__ << std::endl;
+        if(castled_kingside && !white_move) {
+            std::cout << "Reached line " << __LINE__ << std::endl;
+            white_king_moved_ = true;
+            white_hrook_moved_ = true;
+        } else if(castled_kingside && white_move) {
+            std::cout << "Reached line " << __LINE__ << std::endl;
+            black_king_moved_ = true;
+            black_hrook_moved_ = true;
+        }
+        return castled_kingside;
     }
+    std::cout << "Reached line " << __LINE__ << std::endl;
     if(move == "0-0-0") {
-        return CastleQueenside();
+        std::cout << "Reached line " << __LINE__ << std::endl;
+        bool castled_queenside = CastleQueenside();
+        if(castled_queenside && !white_move) {
+            white_king_moved_ = true;
+            white_arook_moved_ = true;
+        } else if(castled_queenside && white_move) {
+            black_king_moved_ = true;
+            black_arook_moved_ = true;
+        }
+        return castled_queenside;
     }
+    if(!isLegalSquare(square)) return false;
     if(move.size() == 2) {
         std::cout << "Reached line " << __LINE__ << std::endl;
         return MovePawn(square);
@@ -59,7 +82,13 @@ bool Board::Move(string move) {
     } else if(toupper(move.at(0)) == 'Q') {
         return MoveQueen(move.substr(1));
     } else if(toupper(move.at(0)) == 'K') {
-        return MoveKing(move.substr(1));
+        bool king_moved = MoveKing(move.substr(1));
+        if(king_moved == true && !white_move) {
+            black_king_moved_ = true;
+        } else if (king_moved == true && white_move) {
+            white_king_moved_ = true;
+        }
+        return king_moved;
     }
     return false;
 }
@@ -301,6 +330,23 @@ void Board::RemovePiece(int square) {
     }
 }
 void Board::UpdatePiece(Piece* piece, int destination_square) {
+    //Update if rooks have moved from origin
+    if(piece->piece == rook) {
+        if(piece->square == 7) {
+            white_hrook_moved_ = true;
+        }
+        if(piece->square == 0) {
+            white_arook_moved_ = true;
+        }
+    }
+    if(piece->piece == -rook) {
+        if(piece->square == 63) {
+            black_hrook_moved_ = true;
+        }
+        if(piece->square == 56) {
+            black_arook_moved_ = true;
+        }
+    }
     board_[destination_square % 8][destination_square / 8] = piece->piece;
     board_[piece->square % 8][piece->square / 8] = 0;
     //std::cout << "curr " << board_[piece->square % 8][piece->square / 8];
@@ -538,9 +584,91 @@ bool Board::MoveQueen(string destination) {
     return false;
 }
 bool Board::CastleKingside() {
+    if(white_move) {
+        std::cout << "Reached line " << __LINE__ << std::endl;
+        //If f1 and g1 are clear, king and rook haven't moved, 
+        //king not currently in check and king doesn't go through check:
+        std::cout << (board_[5][0] == 0) << '\n';
+        std::cout << (board_[6][0] == 0) << '\n';
+        if(board_[5][0] == 0 && board_[6][0] == 0
+        && !white_king_moved_ && !white_hrook_moved_
+        && !white_in_check_ && NotInCheck(5, board_)
+        && NotInCheck(6, board_)) {
+            std::cout << "Reached line " << __LINE__ << std::endl;
+            std::cout << "white king at: " << white_king_.at(0).square << '\n';
+            UpdatePiece(&white_king_.at(0), 6);
+            std::cout << "white king at: " << white_king_.at(0).square << '\n';
+            white_move = true; //necessary because UpdatePiece changes this to false
+            Piece* r;
+            for(Piece rook : white_rooks_) {
+                if(rook.square == 7) {
+                    r = &rook;
+                    UpdatePiece(r, 5);
+                    return true;
+                }
+            }
+        }
+    }
+    else {
+        //If f8 and g8 are clear, king and rook haven't moved, 
+        //king not currently in check and king doesn't go through check:
+        if(board_[5][7] == 0 && board_[6][7] == 0
+        && !black_king_moved_ && !black_hrook_moved_
+        && !black_in_check_ && NotInCheck(61, board_)
+        && NotInCheck(62, board_)) {
+            UpdatePiece(&black_king_.at(0), 62);
+            white_move = false; //necessary because UpdatePiece changes this to false
+            Piece* r;
+            for(Piece rook : black_rooks_) {
+                if(rook.square == 63) {
+                    r = &rook;
+                    UpdatePiece(r, 61);
+                    return true;
+                }
+            }
+        }
+    }
     return false;
 }
 bool Board::CastleQueenside() {
+    if(white_move) {
+        //If b1, c1, and d1 are clear, king and rook haven't moved, 
+        //king not currently in check and king doesn't go through check:
+        if(board_[1][0] == 0 && board_[2][0] == 0 && board_[3][0] == 0
+        && !white_king_moved_ && !white_arook_moved_
+        && !white_in_check_
+        && NotInCheck(2, board_) && NotInCheck(3, board_)) {
+            UpdatePiece(&white_king_.at(0), 2);
+            white_move = true; //necessary because UpdatePiece changes this to false
+            Piece* r;
+            for(Piece rook : white_rooks_) {
+                if(rook.square == 0) {
+                    r = &rook;
+                    UpdatePiece(r, 3);
+                    return true;
+                }
+            }
+        }
+    }
+    else {
+        //If b8, c8, and d8 are clear, king and rook haven't moved, 
+        //king not currently in check and king doesn't go through check:
+        if(board_[1][7] == 0 && board_[2][7] == 0 && board_[3][7] == 0
+        && !black_king_moved_ && !black_arook_moved_
+        && !black_in_check_
+        && NotInCheck(58, board_) && NotInCheck(59, board_)) {
+            UpdatePiece(&black_king_.at(0), 58);
+            white_move = false; //necessary because UpdatePiece changes this to false
+            Piece* r;
+            for(Piece rook : black_rooks_) {
+                if(rook.square == 0) {
+                    r = &rook;
+                    UpdatePiece(r, 59);
+                    return true;
+                }
+            }
+        }
+    }
     return false;
 }
 bool Board::WhiteInCheck() {
@@ -1003,6 +1131,20 @@ Board::Board() {
     white_move = true; //White to move.
     white_in_check_ = false;
     black_in_check_ = false;
+    white_king_moved_ = false;
+    black_king_moved_ = false;
+    white_arook_moved_ = false;
+    white_hrook_moved_ = false;
+    black_arook_moved_ = false;
+    black_hrook_moved_ = false;
+}
+void Board::PrintRookAndKingHaveMoved() {
+    std::cout << "White king: " << white_king_moved_ << '\n';
+    std::cout << "White a-Rook: " << white_arook_moved_ << '\n';
+    std::cout << "White h-Rook: " << white_hrook_moved_ << '\n';
+    std::cout << "Black king: " << black_king_moved_ << '\n';
+    std::cout << "Black a-Rook: " << black_arook_moved_ << '\n';
+    std::cout << "Black h-Rook: " << black_hrook_moved_ << '\n';
 }
 void Board::PrintPieces() {
     for(auto i = piece_map.begin(); i!= piece_map.end(); i++) {
