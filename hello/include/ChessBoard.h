@@ -81,6 +81,8 @@ public:
     bool CastleQueenside();
     bool WhiteInCheck();
     bool BlackInCheck();
+    //Print piece locations using the map:
+    void PrintPieces();
     
 private:
     std::array<std::array<int, 8>, 8> board_;

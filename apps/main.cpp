@@ -21,6 +21,9 @@ int main() {
             case 'p':
                 b.PrintBoard();
                 break;
+            case 's':
+                b.PrintPieces();
+                break;
             case 'q':
                 std::cout <<"Stopping ";
                 not_stop = false;
