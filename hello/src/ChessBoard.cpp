@@ -291,10 +291,14 @@ bool Board::MoveRook(string destination) {
     for(int i = 0; i < matching_pieces->size(); i++) {
         Piece* p = &matching_pieces->at(i);
         //std::cout << p->square << " ";
-        
+        std::cout << "Reached line " << __LINE__ << std::endl;
+        std::cout << "Rook: " << p->square << '\n';
+        std::cout << "Destination square: " << destination_square << '\n';
         if(p->square % 8 == destination_square % 8) {
+            std::cout << "Reached line " << __LINE__ << std::endl;
             //TODO: Add case handling multiple possible rooks (include FromLeft and FromRight)
             if(FromBottom(p->square, destination_square) || FromTop(p->square, destination_square)) {
+                std::cout << "Reached line " << __LINE__ << std::endl;
                 std::array<std::array<int, 8>, 8> board = board_;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
@@ -303,7 +307,9 @@ bool Board::MoveRook(string destination) {
             }
         }
         if(p->square / 8 == destination_square / 8) {
+            std::cout << "Reached line " << __LINE__ << std::endl;
             if(FromLeft(p->square, destination_square) || FromRight(p->square, destination_square)) {
+                std::cout << "Reached line " << __LINE__ << std::endl;
                 std::array<std::array<int, 8>, 8> board = board_;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 RemovePiece(destination_square);
@@ -388,6 +394,8 @@ bool Board::FromKnightMoves(int source_square, int destination_square) {
     return false;
 }
 bool Board::FromBottom(int source_square, int destination_square)  {
+    //To be from bottom, source square must be smaller than destination square:
+    if(source_square >= destination_square) return false;
     for(int i = source_square + 8; i < destination_square; i += 8) {
         //Note: don't need to check that destination_square is within board or empty/piece capturable since IsLegalSquare() has done so
         if(board_[i%8][i/8] != 0) return false;
@@ -395,6 +403,8 @@ bool Board::FromBottom(int source_square, int destination_square)  {
     return true;
 }
 bool Board::FromTop(int source_square, int destination_square) {
+    //To be from top, source square must be larger than destination square:
+    if(source_square <= destination_square) return false;
     for(int i = source_square - 8; i > destination_square; i -= 8) {
         //Note: don't need to check that destination_square is within board or empty/piece capturable since IsLegalSquare() has done so
         if(board_[i%8][i/8] != 0) return false;
@@ -402,18 +412,27 @@ bool Board::FromTop(int source_square, int destination_square) {
     return true;
 }
 bool Board::FromLeft(int source_square, int destination_square) {
+    //To be from left, source square must be smaller than destination square:
+    if(source_square >= destination_square) return false;
     for(int i = source_square + 1; i < destination_square; i++) {
         if(board_[i%8][i/8] != 0) return false;
     }
+    //std::cout << "From Left true" << __LINE__ << std::endl;
     return true;
 }
 bool Board::FromRight(int source_square, int destination_square) {
+    //To be from right, source square must be larger than destination square:
+    if(source_square <= destination_square) return false;
+    //If any pieces in the way, return false:
     for(int i = source_square - 1; i > destination_square; i--) {
         if(board_[i%8][i/8] != 0) return false;
     }
+    //std::cout << "From Right true" << __LINE__ << std::endl;
     return true;
 }
 bool Board::FromBottomLeftDiag(int source_square, int destination_square) {
+    //To be from bottom left, source square must be smaller than destination square:
+    if(source_square >= destination_square) return false;
     for(int i = source_square + 9; i < destination_square; i += 9) {
         if(board_[i%8][i/8] != 0) {
             std::cout << "test";
@@ -421,22 +440,27 @@ bool Board::FromBottomLeftDiag(int source_square, int destination_square) {
             
         }
     }
-    std::cout << "test";
     return true;
 }
 bool Board::FromTopRightDiag(int source_square, int destination_square) {
+    //To be from top right, source square must be larger than destination square:
+    if(source_square <= destination_square) return false;
     for(int i = source_square - 9; i > destination_square; i -= 9) {
         if(board_[i%8][i/8] != 0) return false;
     }
     return true;
 }
 bool Board::FromBottomRightDiag(int source_square, int destination_square) {
+    //To be from bottom right, source square must be smaller than destination square:
+    if(source_square >= destination_square) return false;
     for(int i = source_square + 7; i < destination_square; i += 7) {
         if(board_[i%8][i/8] != 0) return false;
     }
     return true;
 }
 bool Board::FromTopLeftDiag(int source_square, int destination_square) {
+    //To be from top left, source square must be larger than destination square:
+    if(source_square <= destination_square) return false;
     for(int i = source_square - 7; i > destination_square; i -= 7) {
         if(board_[i%8][i/8] != 0) return false;
     }

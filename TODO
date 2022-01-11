@@ -1,14 +1,20 @@
-Handle multiple pieces moving, using standard PGN notation
-
-
 In Progress:
-BUG: if final character of string is not int, example: "be7\", will abort. check for this before std::stoi
-Add pawn captures
+
+Add pawn captures, including en passant
 Add pawn promotions
 Add storage of all previous board states using linked list
+Add checkmate and stalemate rules
+Handle multiple pieces moving, using standard PGN notation
 
 Testing:
 Make sure all rules for castling are properly implemented
+
+Bugs:
+BUG: if final character of string is not int, example: "be7\", will abort. check for this before std::stoi
+
+Fixed bugs:
+BUG: After e4 e5 nf3 nf6 bc4 bc5 rg1, the a-rook moves to g1 instead of the h-rook. FIXED
+
 
 Complete:
 Add castling, making sure that king is never in check
@@ -20,3 +26,4 @@ Create new function KingNotInCheckAfterMove that updates piece positions in a co
 board and makes sure the king is not in check afterwards DONE
 Make sure king is not in check after piece moves DONE
 Make sure that if king is currently in check, the move stops the check DONE
+
