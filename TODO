@@ -1,21 +1,80 @@
 In Progress:
 
-Add pawn captures, including en passant
+Add pawn captures (without en passant for now)
+
+Handle multiple pieces moving, using standard PGN notation.
+Allow 'x' to be inputted. Note: For easier user input, capturing can be done without typing an 'x', and INPUT will not be case-sensitive. However, there will be an error if 'x' is inputted but no capture is done. (Look at destination square to see if capturable piece is there) 
+Note: PGN notation uses capital O instead of 0 for castling.
+
+Ending:
+
+e8=Q+
+e8=Q#
+dxe8=Q
+Minimum size for pawn promotion: 4.
+
+If ends with check/checkmate, ignore and get substring of the rest. TODO after: Similar to KingNotInCheckAfterMove(), add a function that makes sure resulting position matches with check/checkmate as specified in the input. 
+
+Then check if castles.
+Then, if ends with a piece char 'Q', 'R', 'B', 'N', check if the one before is an '='. If so, call a separate PawnPromote() function. Note: captures are possible with pawn promotion.
+Otherwise, possible combinations:
+Note: for easier input, if "Nge2" is inputted but just inputting "Ne2" is possible, play it anyways.
+
+N	e2
+N	g	e2
+N	1	e2
+N	g1	e2
+
+N	g	x	e2
+N	1	x	e2
+N	g1	x	e2
+So first check legal square.
+If an 'x' is before the square, make sure a capturable piece is on there, otherwise return false. Remove the 'x' from the string. DONE
+
+Then, go to specific piece move() function. Check if pawn: first character must be from 'a' through 'h'. Handle captures in the pawnmove() function, e.g. "ed4".
+MovePawn(): first, size must be 2 or 3. If size == 2, use existing code. If size == 3, calculate the possible squares for a pawn to be. If the destination square is empty, check for en passant (pawn is next to other pawn, previous move was pawn moving there). Otherwise, check the square where pawn would be to capture.
+
+For pieces:
+ADD: for size 2 or 3, make sure only one possible valid move (taking into account illegal moves that walk into check). 
+
+
+If string size is 2, move like normal.
+Two helper functions to confirm that a piece is on specified row/file:
+If string size is 3, 2 cases: rank (row) or file (col) specified.
+NOTE: user input will be between 1 to 8, but many functions will take 0 to 7 as arguments.
+If string size is 4, square specified. 
+>If rank specified, iterate through pieces and only process if square/8 == rank.
+>If file specified, iterate through pieces and only process if square%8 == rank.
+If string size is 4: 2 squares specified. Iterate through pieces and only process if piece's square == the first square specified.  
+
+To do after updating PGN reading to include 'x' and multiple possible pieces to same square:
+Simplify MovePawn() to have both black and white to remove redundancies. Use int promotion_rank (0 or 7), starting_rank (1 or 6),
+color_multiplier (1 if white, -1 if black for moving forward/backward).
+color_multiplier*8 for pawn moving forward 1 square
+color_multiplier*16 for pawn moving forward 2 squares
+color_multiplier*7 and color_multiplier * 9 for pawn captures
+
 Add pawn promotions
 Add storage of all previous board states using linked list
+Add en passant: need to store the previous move, with true/false if pawn moved two squares. If square where pawn captures is blank, but
+an "x" is given in the PGN notation, check if en passant is available.
+
 Add checkmate and stalemate rules
-Handle multiple pieces moving, using standard PGN notation
+
+Add function that sets up board according to an FEN string, which is an optional part of a PGN file.
 
 Testing:
 Make sure all rules for castling are properly implemented
 
 Bugs:
-BUG: if final character of string is not int, example: "be7\", will abort. check for this before std::stoi
+BUG: if final character of string is not int, example: "be7\", will abort. check for this before std::stoi. First add function to make sure all characters of user input are valid characters.
 
 Fixed bugs:
 BUG: After e4 e5 nf3 nf6 bc4 bc5 rg1, the a-rook moves to g1 instead of the h-rook. FIXED
 
-
+Cleaning up code:
+Turn color_multiplier if/else into one line using ternary operator
+Remove redundancies: could move similar code from individual MovePiece() functions back into move? for example, col_specified, row_specified, and square_specified code is the same
 Complete:
 Add castling, making sure that king is never in check
 ->add booleans tracking if kings and rooks have moved already

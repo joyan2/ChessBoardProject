@@ -43,6 +43,7 @@ public:
     Board();
     bool Move(string move);
     bool MovePawn(string destination);
+    bool PromotePawn(string destination);
     bool MoveKnight(string destination);
     bool MoveBishop(string destination);
     bool MoveRook(string destination);
@@ -113,6 +114,19 @@ private:
     //Store whose turn to move.
     bool white_move;
 
+    //Helper function: checks if a char is equal to 'Q', 'R,' 'B', or 'N'
+    bool CanPromoteInto(char piece);
+    //Checks if a char tolower is between 'a' and 'h' inclusive.
+    bool IsValidCol(char col);
+    //Checks if a char to int is between 1 and 9 inclusive.
+    bool IsValidRow(char row);
+    //Checks if a piece is on specified rank(row) or file(col):
+    bool IsSpecifiedCol(int square, char col);
+    bool IsSpecifiedRow(int square, char row);
+    //Converts a char from 'a' to 'h' to the appropriate int from 0 to 7
+    int ColToInt(char col);
+    //Checks if destination square has an opposite-colored piece that isn't a king
+    bool IsCapturable(string destination);
     //Use a copy board
     bool KingNotInCheckAfterMove(int source_square, int destination_square, std::array<std::array<int, 8>, 8> board);
 

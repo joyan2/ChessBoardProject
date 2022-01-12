@@ -15,30 +15,19 @@ const int king = 10;
 const int ONE_COL = 8;
 const int ONE_ROW = 1;
 bool Board::Move(string move) {
-    std::cout << "Reached line " << __LINE__ << std::endl;
+    if(white_in_check_) {
+        std::cout << "White king in check" << '\n';
+    }
+    if(black_in_check_) {
+        std::cout << "Black king in check" << '\n';
+    }
+    if(move.at(move.size()-1) == '+' || move.at(move.size()-1) == '#') {
+        //Remove the + or # and continue.
+        move = move.substr(0, move.size()-1);
+    }
     if(move.size() < 2) return false;
-    string square = move.substr(move.size()-2);
     //std::cout <<square<<std::endl;
     //Depending on first character of string, move the specified piece
-    
-
-    /*//Update who is in check
-    std::cout << "Reached line " << __LINE__ << std::endl;
-    if(white_move) {
-        if(NotInCheck(white_king_.at(0).square, board_)) {
-            white_in_check_ = false;
-        } else {
-            std::cout << "white in check";
-            white_in_check_ = true;
-        }
-    } else {
-        if(NotInCheck(black_king_.at(0).square, board_)) {
-            black_in_check_ = false;
-        } else {
-            std::cout << "black in check";
-            black_in_check_ = true;
-        }
-    }*/
 
     std::cout << "Reached line " << __LINE__ << std::endl;
     if(move == "0-0") {
@@ -69,11 +58,25 @@ bool Board::Move(string move) {
         }
         return castled_queenside;
     }
+    //If last 2 chars are '=' and a valid piece, try promoting pawn:
+    if(move.size() >= 4 && CanPromoteInto(move.at(move.size()-1)) && move.at(move.size()-2) == '=') {
+        return PromotePawn(move);
+    }
+    string square = move.substr(move.size()-2);
     if(!isLegalSquare(square)) return false;
-    if(move.size() == 2) {
-        std::cout << "Reached line " << __LINE__ << std::endl;
-        return MovePawn(square);
-    } else if(toupper(move.at(0)) == 'N') {
+    //If an 'x' is before the square, make sure a capturable piece is on there, otherwise return false. 
+    //Remove the 'x' from the string.
+    if(move.size() >= 4 && toupper(move.at(move.size()-3)) == 'X') {
+        if(IsCapturable(square)) {
+            //Remove the 'x' from move:
+            move = move.substr(0, move.size()-3);
+            move += square;
+        } else {
+            return false;
+        }
+    }
+    if(toupper(move.at(0)) == 'N') {
+        std::cout << "Moving knight" << '\n';
         return MoveKnight(move.substr(1));
     } else if(toupper(move.at(0)) == 'B') {
         return MoveBishop(move.substr(1));
@@ -89,6 +92,14 @@ bool Board::Move(string move) {
             white_king_moved_ = true;
         }
         return king_moved;
+    } else if(move.size() == 3) {
+        //Check that first move is between a-h. The other two chars are already
+        //confirmed to be a legal square.
+        if(IsValidCol(move.at(0))) {
+            return MovePawn(move);
+        }
+    } else if(move.size() == 2) {
+        return MovePawn(square);
     }
     return false;
 }
@@ -133,10 +144,6 @@ bool Board::MovePawn(string destination) {
                 }
                 
             }
-        }
-        //If promotion:
-        if(col == 8) {
-
         }
         //Rest of cases:
         if(col != 4 && col >= 3 && col <=7) {
@@ -186,10 +193,6 @@ bool Board::MovePawn(string destination) {
                 
             }
         }
-        //If promotion:
-        if(col == 1) {
-
-        }
         //Rest of cases:
         if(col != 5 && col >= 2 && col <=6) {
             vector<Piece>* matching_pieces = piece_map[-pawn];
@@ -210,6 +213,9 @@ bool Board::MovePawn(string destination) {
     std::cout << "Invalid destination" << std::endl;
     return false;
 }
+bool Board::CanPromoteInto(char piece) {
+    return (piece == 'Q' || piece == 'R' || piece == 'B' || piece == 'N');
+}
 bool Board::MoveKnight(string destination) {
     char row = destination.at(destination.size() - 2);
     int col = std::stoi(destination.substr(destination.size() - 1));
@@ -221,17 +227,52 @@ bool Board::MoveKnight(string destination) {
     } else {
         knight_color_multiplier = -1;
     }
-
+    bool possible_knight = false; //True if a possible knight is found
+    Piece* possible_piece = nullptr;
+    bool col_specified = (destination.size() == 3 && IsValidCol(destination.at(0)));
+    bool row_specified = (destination.size() == 3 && IsValidRow(destination.at(0)));
+    bool square_specified = (destination.size() == 4 && IsValidCol(destination.at(0)
+    && IsValidRow(destination.at(1))));
+    //If destination size >= 3 but no valid col, row, or square was specified, return false:
+    if(destination.size() >= 3 && (!col_specified && !row_specified && !square_specified)) {
+        std::cout << "No valid col/row/square specified" << '\n';
+        return false;
+    }
+    std::cout << "col specified: " << col_specified << " " << destination.at(0) << '\n';
+    std::cout << "col to int: " <<ColToInt(destination.at(0)) << '\n';
+    std::cout << "Destination square: " << destination_square << '\n';
     vector<Piece>* matching_pieces = piece_map[knight_color_multiplier*knight];
     for(int i = 0; i < matching_pieces->size(); i++) {
+        std::cout << "knight loop" << std::endl;
         Piece* p = &matching_pieces->at(i);
+        std::cout << "Knight square: " << p->square << std::endl;
+        //If col, row, or square specified but piece is not on specified col, don't process:
+        if(col_specified && !IsSpecifiedCol(p->square, destination.at(0))) {
+            std::cout << "col doesn't match " << std::endl;
+            continue;
+        };
+        if(row_specified && !IsSpecifiedRow(p->square, destination.at(0))) continue;
+        if(square_specified && !IsSpecifiedCol(p->square, destination.at(0))
+        && !IsSpecifiedRow(p->square, destination.at(1))) continue;
         if(FromKnightMoves(p->square, destination_square)) {
+            std::cout << "Knight square possible: " << p->square << std::endl;
             std::array<std::array<int, 8>, 8> board = board_;
             if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-            RemovePiece(destination_square);
-            UpdatePiece(p, destination_square);
-            return true;  
+            //If another possible knight has been found, don't move:
+            if(possible_knight == true) {
+                std::cout << "Another possible knight found at: ";
+                std::cout << possible_piece->square << std::endl;;
+                return false;
+            } else {
+                possible_knight = true;
+                possible_piece = p;
+            }
         }
+    }
+    if(possible_knight) {
+        RemovePiece(destination_square);
+        UpdatePiece(possible_piece, destination_square);
+        return true;
     }
     return false;
 }
@@ -1273,11 +1314,45 @@ void Board::PrintBoard() {
 void Board::PrintSquares() {
     for(int i = 0; i <8; i++) {
         for(int j = 0; j < 8; j++) {
-            std::cout << i + j*8<< ' ';
-            if(i*8+j < 10) {
+            int square = i + j*8;
+            std::cout << square << ' ';
+            if(square < 10) {
                 std::cout << ' ';
             }
         }
         std::cout << '\n';
     }
+}
+bool Board::IsCapturable(string destination) {
+    char row = destination.at(destination.size() - 2);
+    int col = std::stoi(destination.substr(destination.size() - 1));
+    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
+    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    int color_multiplier = white_move ? (-1) : 1;
+    int p = board_[destination_square%8][destination_square/8]*color_multiplier;
+    return (p != -king && p < 0);
+}
+bool Board::PromotePawn(string destination) {
+    return false;
+}
+bool Board::IsValidCol(char col) {
+    return (tolower(col) >= 'a' && tolower(col) <= 'h');
+}
+bool Board::IsValidRow(char row) {
+    int irow = row - '0'; //convert to int
+    return (irow >= 1 && irow <= 8);
+}
+int Board::ColToInt(char col) {
+    return (toupper(col) - 'A');
+}
+bool Board::IsSpecifiedCol(int square, char col) {
+    int icol = ColToInt(col);
+    std::cout << "icol: " << icol << '\n';
+    std::cout << "square: " << square << '\n';
+    return square % 8 == icol;
+}
+bool Board::IsSpecifiedRow(int square, char row) {
+    int irow = row - '0';
+    //user-specified row will be 1 to 8, so subtract 1:
+    return square / 8 == irow -1 ;
 }
