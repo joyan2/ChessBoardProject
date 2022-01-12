@@ -45,7 +45,8 @@ NOTE: user input will be between 1 to 8, but many functions will take 0 to 7 as 
 If string size is 4, square specified. 
 >If rank specified, iterate through pieces and only process if square/8 == rank.
 >If file specified, iterate through pieces and only process if square%8 == rank.
-If string size is 4: 2 squares specified. Iterate through pieces and only process if piece's square == the first square specified.  
+If string size is 4: 2 squares specified. Iterate through pieces and only process if piece's square == the first square specified. 
+>Note: not possible for Rook to have 2 squares specified. 
 
 To do after updating PGN reading to include 'x' and multiple possible pieces to same square:
 Simplify MovePawn() to have both black and white to remove redundancies. Use int promotion_rank (0 or 7), starting_rank (1 or 6),

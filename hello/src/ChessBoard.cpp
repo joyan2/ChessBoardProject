@@ -67,10 +67,12 @@ bool Board::Move(string move) {
     //If an 'x' is before the square, make sure a capturable piece is on there, otherwise return false. 
     //Remove the 'x' from the string.
     if(move.size() >= 4 && toupper(move.at(move.size()-3)) == 'X') {
+        std::cout << "x detected" << '\n';
         if(IsCapturable(square)) {
             //Remove the 'x' from move:
             move = move.substr(0, move.size()-3);
             move += square;
+            std::cout << "move without x: " << move << '\n';
         } else {
             return false;
         }
@@ -288,35 +290,68 @@ bool Board::MoveBishop(string destination) {
     } else {
         bishop_color_multiplier = -1;
     }
-
+    bool possible_bishop = false; //True if a possible knight is found
+    Piece* possible_piece = nullptr;
+    bool col_specified = (destination.size() == 3 && IsValidCol(destination.at(0)));
+    bool row_specified = (destination.size() == 3 && IsValidRow(destination.at(0)));
+    bool square_specified = (destination.size() == 4 && IsValidCol(destination.at(0)
+    && IsValidRow(destination.at(1))));
+    //If destination size >= 3 but no valid col, row, or square was specified, return false:
+    if(destination.size() >= 3 && (!col_specified && !row_specified && !square_specified)) {
+        std::cout << "No valid col/row/square specified" << '\n';
+        return false;
+    }
     vector<Piece>* matching_pieces = piece_map[bishop_color_multiplier*bishop];
     for(int i = 0; i < matching_pieces->size(); i++) {
         Piece* p = &matching_pieces->at(i);
         //Case: BottomRightDiag to TopLeftDiag
+                if(col_specified && !IsSpecifiedCol(p->square, destination.at(0))) {
+            std::cout << "col doesn't match " << std::endl;
+            continue;
+        };
+        if(row_specified && !IsSpecifiedRow(p->square, destination.at(0))) continue;
+        if(square_specified && !IsSpecifiedCol(p->square, destination.at(0))
+        && !IsSpecifiedRow(p->square, destination.at(1))) continue;
         if(p->square % 7 == destination_square % 7) {
             if(FromBottomRightDiag(p->square, destination_square) || FromTopLeftDiag(p->square, destination_square)) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;  
+                if(possible_bishop == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_bishop = true;
+                    possible_piece = p;
+                }
             }
         }
         //Case: BottomLeftDiag to TopRightDiag
-        if(p->square % 9 == destination_square % 9) {
+        else if(p->square % 9 == destination_square % 9) {
             if(FromBottomLeftDiag(p->square, destination_square) || FromTopRightDiag(p->square, destination_square)) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;
+                if(possible_bishop == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_bishop = true;
+                    possible_piece = p;
+                }
             }
         }
+    }
+    if(possible_bishop) {
+        RemovePiece(destination_square);
+        UpdatePiece(possible_piece, destination_square);
+        return true;
     }
     return false;
 }
 
 bool Board::MoveRook(string destination) {
+    if(destination.size() > 3) return false; //not possible for Rook to have 2 squares specified. 
     char row = destination.at(destination.size() - 2);
     int col = std::stoi(destination.substr(destination.size() - 1));
     int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
@@ -327,7 +362,15 @@ bool Board::MoveRook(string destination) {
     } else {
         rook_color_multiplier = -1;
     }
-
+    bool possible_rook = false; //True if a possible knight is found
+    Piece* possible_piece = nullptr;
+    bool col_specified = (destination.size() == 3 && IsValidCol(destination.at(0)));
+    bool row_specified = (destination.size() == 3 && IsValidRow(destination.at(0)));
+    //If destination size >= 3 but no valid col, row, or square was specified, return false:
+    if(destination.size() == 3 && (!col_specified && !row_specified)) {
+        std::cout << "No valid col/row/square specified" << '\n';
+        return false;
+    }
     vector<Piece>* matching_pieces = piece_map[rook_color_multiplier*rook];
     for(int i = 0; i < matching_pieces->size(); i++) {
         Piece* p = &matching_pieces->at(i);
@@ -335,6 +378,11 @@ bool Board::MoveRook(string destination) {
         std::cout << "Reached line " << __LINE__ << std::endl;
         std::cout << "Rook: " << p->square << '\n';
         std::cout << "Destination square: " << destination_square << '\n';
+        if(col_specified && !IsSpecifiedCol(p->square, destination.at(0))) {
+            std::cout << "col doesn't match " << std::endl;
+            continue;
+        };
+        if(row_specified && !IsSpecifiedRow(p->square, destination.at(0))) continue;
         if(p->square % 8 == destination_square % 8) {
             std::cout << "Reached line " << __LINE__ << std::endl;
             //TODO: Add case handling multiple possible rooks (include FromLeft and FromRight)
@@ -342,23 +390,38 @@ bool Board::MoveRook(string destination) {
                 std::cout << "Reached line " << __LINE__ << std::endl;
                 std::array<std::array<int, 8>, 8> board = board_;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;
+                if(possible_rook == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_rook = true;
+                    possible_piece = p;
+                }
             }
         }
-        if(p->square / 8 == destination_square / 8) {
+        else if(p->square / 8 == destination_square / 8) {
             std::cout << "Reached line " << __LINE__ << std::endl;
             if(FromLeft(p->square, destination_square) || FromRight(p->square, destination_square)) {
                 std::cout << "Reached line " << __LINE__ << std::endl;
                 std::array<std::array<int, 8>, 8> board = board_;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;
+                if(possible_rook == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_rook = true;
+                    possible_piece = p;
+                }
             }
         }
         
+    }
+    if(possible_rook) {
+        RemovePiece(destination_square);
+        UpdatePiece(possible_piece, destination_square);
+        return true;
     }
     return false;
 }
@@ -520,19 +583,41 @@ bool Board::MoveQueen(string destination) {
     } else {
         queen_color_multiplier = -1;
     }
-
+    bool possible_queen = false; //True if a possible knight is found
+    Piece* possible_piece = nullptr;
+    bool col_specified = (destination.size() == 3 && IsValidCol(destination.at(0)));
+    bool row_specified = (destination.size() == 3 && IsValidRow(destination.at(0)));
+    bool square_specified = (destination.size() == 4 && IsValidCol(destination.at(0)
+    && IsValidRow(destination.at(1))));
+    //If destination size >= 3 but no valid col, row, or square was specified, return false:
+    if(destination.size() >= 3 && (!col_specified && !row_specified && !square_specified)) {
+        std::cout << "No valid col/row/square specified" << '\n';
+        return false;
+    }
     vector<Piece>* matching_pieces = piece_map[queen_color_multiplier*queen];
     for(int i = 0; i < matching_pieces->size(); i++) {
         Piece* p = &matching_pieces->at(i);
+        if(col_specified && !IsSpecifiedCol(p->square, destination.at(0))) {
+            std::cout << "col doesn't match " << std::endl;
+            continue;
+        };
+        if(row_specified && !IsSpecifiedRow(p->square, destination.at(0))) continue;
+        if(square_specified && !IsSpecifiedCol(p->square, destination.at(0))
+        && !IsSpecifiedRow(p->square, destination.at(1))) continue;
         if(p->square % 8 == destination_square % 8) {
             //TODO: Add case handling multiple possible rooks (include FromLeft and FromRight)
             if(FromBottom(p->square, destination_square) || FromTop(p->square, destination_square)) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 std::cout << "Reached line 3 " << __LINE__ << std::endl;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;
+                if(possible_queen == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_queen = true;
+                    possible_piece = p;
+                }
             }
         }
         if(p->square / 8 == destination_square / 8) {
@@ -540,9 +625,14 @@ bool Board::MoveQueen(string destination) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 std::cout << "Reached line 4 " << __LINE__ << std::endl;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;
+                if(possible_queen == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_queen = true;
+                    possible_piece = p;
+                }
             }
         }
         //Case: BottomRightDiag to TopLeftDiag
@@ -564,9 +654,14 @@ bool Board::MoveQueen(string destination) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 std::cout << "Reached line 1 " << __LINE__ << std::endl;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;  
+                if(possible_queen == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_queen = true;
+                    possible_piece = p;
+                }
             }
         }
         //while not on the 8th rank or a-file, keep increasing.
@@ -589,9 +684,14 @@ bool Board::MoveQueen(string destination) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 std::cout << "Reached line 1 " << __LINE__ << std::endl;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;  
+                if(possible_queen == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_queen = true;
+                    possible_piece = p;
+                }
             }
         }
         //Case: BottomLeftDiag to TopRightDiag
@@ -614,9 +714,14 @@ bool Board::MoveQueen(string destination) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 std::cout << "Reached line 2 " << __LINE__ << std::endl;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;
+                if(possible_queen == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_queen = true;
+                    possible_piece = p;
+                }
             }
         }
         //while not on the 8th rank or a-file, keep increasing.
@@ -639,12 +744,22 @@ bool Board::MoveQueen(string destination) {
                 std::array<std::array<int, 8>, 8> board = board_;
                 std::cout << "Reached line 2 " << __LINE__ << std::endl;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
-                RemovePiece(destination_square);
-                UpdatePiece(p, destination_square);
-                return true;
+                if(possible_queen == true) {
+                    std::cout << "Another possible knight found at: ";
+                    std::cout << possible_piece->square << std::endl;;
+                    return false;
+                } else {
+                    possible_queen = true;
+                    possible_piece = p;
+                }
             }
         }
 
+    }
+    if(possible_queen) {
+        RemovePiece(destination_square);
+        UpdatePiece(possible_piece, destination_square);
+        return true;
     }
     return false;
 }
@@ -1324,11 +1439,12 @@ void Board::PrintSquares() {
     }
 }
 bool Board::IsCapturable(string destination) {
+    std::cout << "Is capturable function start destination: " << destination << '\n';
     char row = destination.at(destination.size() - 2);
     int col = std::stoi(destination.substr(destination.size() - 1));
     int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
     int destination_square = (col-1) * ONE_COL + (destination_row-1);
-    int color_multiplier = white_move ? (-1) : 1;
+    int color_multiplier = white_move ? 1 : (-1);
     int p = board_[destination_square%8][destination_square/8]*color_multiplier;
     return (p != -king && p < 0);
 }
