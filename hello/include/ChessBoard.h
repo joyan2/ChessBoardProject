@@ -127,6 +127,8 @@ private:
     int ColToInt(char col);
     //Checks if destination square has an opposite-colored piece that isn't a king
     bool IsCapturable(string destination);
+    //Checks if en passant is available
+    bool CanEnPassant(string destination);
     //Use a copy board
     bool KingNotInCheckAfterMove(int source_square, int destination_square, std::array<std::array<int, 8>, 8> board);
 
@@ -148,4 +150,7 @@ private:
     bool CheckFromTop(int square, std::array<std::array<int, 8>, 8> &board);
     bool CheckFromLeft(int square, std::array<std::array<int, 8>, 8> &board);
     bool CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board);
+
+    //Pointer to last moved pawn. Used to simplify en passant logic
+    Piece* last_moved_pawn;
 };

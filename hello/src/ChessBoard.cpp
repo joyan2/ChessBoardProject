@@ -32,35 +32,39 @@ bool Board::Move(string move) {
     std::cout << "Reached line " << __LINE__ << std::endl;
     if(move == "0-0") {
         std::cout << "Reached line " << __LINE__ << std::endl;
-        bool castled_kingside = CastleKingside();
+        bool move_success = CastleKingside();
         std::cout << "Reached line " << __LINE__ << std::endl;
-        if(castled_kingside && !white_move) {
+        if(move_success && !white_move) {
             std::cout << "Reached line " << __LINE__ << std::endl;
             white_king_moved_ = true;
             white_hrook_moved_ = true;
-        } else if(castled_kingside && white_move) {
+        } else if(move_success && white_move) {
             std::cout << "Reached line " << __LINE__ << std::endl;
             black_king_moved_ = true;
             black_hrook_moved_ = true;
         }
-        return castled_kingside;
+        if(move_success) last_moved_pawn = nullptr;
+        return move_success;
     }
     std::cout << "Reached line " << __LINE__ << std::endl;
     if(move == "0-0-0") {
         std::cout << "Reached line " << __LINE__ << std::endl;
-        bool castled_queenside = CastleQueenside();
-        if(castled_queenside && !white_move) {
+        bool move_success = CastleQueenside();
+        if(move_success && !white_move) {
             white_king_moved_ = true;
             white_arook_moved_ = true;
-        } else if(castled_queenside && white_move) {
+        } else if(move_success && white_move) {
             black_king_moved_ = true;
             black_arook_moved_ = true;
         }
-        return castled_queenside;
+        if(move_success) last_moved_pawn = nullptr;
+        return move_success;
     }
     //If last 2 chars are '=' and a valid piece, try promoting pawn:
     if(move.size() >= 4 && CanPromoteInto(move.at(move.size()-1)) && move.at(move.size()-2) == '=') {
-        return PromotePawn(move);
+        bool move_success = PromotePawn(move);
+        if(move_success) last_moved_pawn = nullptr;
+        return move_success;
     }
     string square = move.substr(move.size()-2);
     if(!isLegalSquare(square)) return false;
@@ -68,7 +72,34 @@ bool Board::Move(string move) {
     //Remove the 'x' from the string.
     if(move.size() >= 4 && toupper(move.at(move.size()-3)) == 'X') {
         std::cout << "x detected" << '\n';
-        if(IsCapturable(square)) {
+        //For en passant and pawn captures:
+        if(move.size() == 4 && IsValidCol(move.at(0))) {
+            std::cout << "reached ";
+            string destination = square;
+            int color_multiplier = white_move ? 1 : (-1);
+            char row = destination.at(destination.size() - 2);
+            int col = std::stoi(destination.substr(destination.size() - 1));
+            int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
+            int destination_square = (col-1) * ONE_COL + (destination_row-1);
+            //If the column is right and 
+            if((white_move && (destination_square / 8) == 5)
+            ||(!white_move && (destination_square / 8) == 2)) {
+                if(board_[destination_square%8][destination_square/8] == 0
+                && CanEnPassant(square)) {
+                    std::cout << "pawn can en passant " << move << '\n';
+                    move = move.substr(0, move.size()-3);
+                    move += square;
+                } else if(IsCapturable(square)) {
+                    std::cout << "pawn can capture on 6th rank: " << move << '\n';
+                    move = move.substr(0, move.size()-3);
+                    move += square;
+                } else {
+                    return false;
+                }
+            }
+
+        //For other pieces:
+        else if(IsCapturable(square)) {
             //Remove the 'x' from move:
             move = move.substr(0, move.size()-3);
             move += square;
@@ -76,16 +107,25 @@ bool Board::Move(string move) {
         } else {
             return false;
         }
+        }
     }
     if(toupper(move.at(0)) == 'N') {
         std::cout << "Moving knight" << '\n';
-        return MoveKnight(move.substr(1));
+        bool move_success = MoveKnight(move.substr(1));
+        if(move_success) last_moved_pawn = nullptr;
+        return move_success;
     } else if(toupper(move.at(0)) == 'B') {
-        return MoveBishop(move.substr(1));
+        bool move_success = MoveBishop(move.substr(1));
+        if(move_success) last_moved_pawn = nullptr;
+        return move_success;
     } else if(toupper(move.at(0)) == 'R') {
-        return MoveRook(move.substr(1));
+        bool move_success = MoveRook(move.substr(1));
+        if(move_success) last_moved_pawn = nullptr;
+        return move_success;
     } else if(toupper(move.at(0)) == 'Q') {
-        return MoveQueen(move.substr(1));
+        bool move_success = MoveQueen(move.substr(1));
+        if(move_success) last_moved_pawn = nullptr;
+        return move_success;
     } else if(toupper(move.at(0)) == 'K') {
         bool king_moved = MoveKing(move.substr(1));
         if(king_moved == true && !white_move) {
@@ -93,6 +133,7 @@ bool Board::Move(string move) {
         } else if (king_moved == true && white_move) {
             white_king_moved_ = true;
         }
+        if(king_moved) last_moved_pawn = nullptr;
         return king_moved;
     } else if(move.size() == 3) {
         //Check that first move is between a-h. The other two chars are already
@@ -114,7 +155,47 @@ bool Board::MovePawn(string destination) {
     int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
     int destination_square = (col-1) * ONE_COL + (destination_row-1);
     //std::cout << row << " " << col << " " << destination_row << " " << destination_square << std::endl;
-    if(white_move) {
+    
+    int color_multiplier = white_move ? 1 : (-1);
+    //For captures:
+    if(destination.size() == 3) {
+        if(!IsValidCol(destination.at(0))) return false; //Confirm that first char is valid column
+        //If destination square is empty, check for en passant
+        if(board_[destination_square%8][destination_square/8] == 0) {
+            if(last_moved_pawn == nullptr) return false;
+            //If destination is directly behind last moved pawn, check if pawn does en passant
+            if(last_moved_pawn->square == destination_square-color_multiplier*8) {
+                vector<Piece>* matching_pieces = piece_map[pawn];
+                for(int i = 0; i < matching_pieces->size(); i++) {
+                    Piece* p = &matching_pieces->at(i);
+                    if(!IsSpecifiedCol(p->square, destination.at(0))) continue;
+                    std::cout << "Reached line " << __LINE__ << std::endl;
+                    std::array<std::array<int, 8>, 8> board = board_;
+                    //std::cout << board[2][5];
+                    if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
+                    RemovePiece(last_moved_pawn->square);
+                    UpdatePiece(p, destination_square);
+                    last_moved_pawn = nullptr;
+                    return true;
+                }
+            }
+        } else {
+            vector<Piece>* matching_pieces = piece_map[pawn];
+            for(int i = 0; i < matching_pieces->size(); i++) {
+                Piece* p = &matching_pieces->at(i);
+                if(!IsSpecifiedCol(p->square, destination.at(0))) continue;
+                std::cout << "Reached line " << __LINE__ << std::endl;
+                std::array<std::array<int, 8>, 8> board = board_;
+                //std::cout << board[2][5];
+                if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
+                RemovePiece(destination_square);
+                UpdatePiece(p, destination_square);
+                last_moved_pawn = nullptr;
+                return true;
+            }
+        }
+    }
+    else if(white_move) {
         //If column 4, can have moved 2 squares
         if(col == 4) {
             //Check if a piece is in the way
@@ -131,6 +212,7 @@ bool Board::MovePawn(string destination) {
                     //std::cout << board[2][5];
                     if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
+                    last_moved_pawn = nullptr;
                     return true;
                 } else if(p->square == destination_square - ONE_COL*2) {
                     //If a pawn above it exists, ignore this pawn and continue
@@ -141,6 +223,7 @@ bool Board::MovePawn(string destination) {
                         std::array<std::array<int, 8>, 8> board = board_;
                         if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                         UpdatePiece(p, destination_square);
+                        last_moved_pawn = p;
                         return true;
                     }
                 }
@@ -156,6 +239,7 @@ bool Board::MovePawn(string destination) {
                     std::array<std::array<int, 8>, 8> board = board_;
                     if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
+                    last_moved_pawn = nullptr;
                     return true;
                 }
             }
@@ -179,6 +263,7 @@ bool Board::MovePawn(string destination) {
                     std::array<std::array<int, 8>, 8> board = board_;
                     if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
+                    last_moved_pawn = nullptr;
                     return true;
                 } else if(p->square == destination_square + ONE_COL*2) {
                     //If a pawn above it exists, ignore this pawn and continue
@@ -189,6 +274,7 @@ bool Board::MovePawn(string destination) {
                         std::array<std::array<int, 8>, 8> board = board_;
                         if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                         UpdatePiece(p, destination_square);
+                        last_moved_pawn = p;
                         return true;
                     }
                 }
@@ -204,6 +290,7 @@ bool Board::MovePawn(string destination) {
                     std::array<std::array<int, 8>, 8> board = board_;
                     if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                     UpdatePiece(p, destination_square);
+                    last_moved_pawn = nullptr;
                     return true;
                 }
             }
@@ -1317,6 +1404,7 @@ Board::Board() {
     white_hrook_moved_ = false;
     black_arook_moved_ = false;
     black_hrook_moved_ = false;
+    last_moved_pawn = nullptr;
 }
 void Board::PrintRookAndKingHaveMoved() {
     std::cout << "White king: " << white_king_moved_ << '\n';
@@ -1439,14 +1527,35 @@ void Board::PrintSquares() {
     }
 }
 bool Board::IsCapturable(string destination) {
+    int color_multiplier = white_move ? 1 : (-1);
+
     std::cout << "Is capturable function start destination: " << destination << '\n';
     char row = destination.at(destination.size() - 2);
     int col = std::stoi(destination.substr(destination.size() - 1));
     int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
     int destination_square = (col-1) * ONE_COL + (destination_row-1);
-    int color_multiplier = white_move ? 1 : (-1);
     int p = board_[destination_square%8][destination_square/8]*color_multiplier;
     return (p != -king && p < 0);
+}
+bool Board::CanEnPassant(string destination) {
+    int color_multiplier = white_move ? 1 : (-1);
+    std::cout << "Is capturable en passant start destination: " << destination << '\n';
+    char row = destination.at(destination.size() - 2);
+    int col = std::stoi(destination.substr(destination.size() - 1));
+    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
+    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    //Destination must be on the 6th rank for the player
+    if(!((white_move && (destination_square / 8) == 5)
+    ||(!white_move && (destination_square / 8) == 2))) {
+        return false;
+    }
+    //If last moved pawn is not null, last moved pawn is ahead of destination square,
+    //en passant is possible. Does not check if a pawn is in the right square
+    //to capture it; that is done in MovePawn().
+    if(last_moved_pawn != nullptr && last_moved_pawn->square == destination_square - color_multiplier*8) {
+        return true;
+    }
+    return false;
 }
 bool Board::PromotePawn(string destination) {
     return false;
