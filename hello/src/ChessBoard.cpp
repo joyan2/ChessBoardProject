@@ -165,7 +165,7 @@ bool Board::MovePawn(string destination) {
             if(last_moved_pawn == nullptr) return false;
             //If destination is directly behind last moved pawn, check if pawn does en passant
             if(last_moved_pawn->square == destination_square-color_multiplier*8) {
-                vector<Piece>* matching_pieces = piece_map[pawn];
+                vector<Piece>* matching_pieces = piece_map[pawn*color_multiplier];
                 for(int i = 0; i < matching_pieces->size(); i++) {
                     Piece* p = &matching_pieces->at(i);
                     if(!IsSpecifiedCol(p->square, destination.at(0))) continue;
@@ -180,7 +180,7 @@ bool Board::MovePawn(string destination) {
                 }
             }
         } else {
-            vector<Piece>* matching_pieces = piece_map[pawn];
+            vector<Piece>* matching_pieces = piece_map[pawn*color_multiplier];
             for(int i = 0; i < matching_pieces->size(); i++) {
                 Piece* p = &matching_pieces->at(i);
                 if(!IsSpecifiedCol(p->square, destination.at(0))) continue;

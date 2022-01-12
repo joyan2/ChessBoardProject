@@ -1,6 +1,8 @@
 In Progress:
 
-Add pawn captures (without en passant for now)
+Add pawn captures
+BUG: e4 f5 exf5 g6 fxg6 hxg6 the white h-pawn is missing, and black doesn't capture. FIXED: forgot color_multiplier for piece_map[pawn]
+
 Update MovePiece() logic to allow [source_square][destination_square] format for all pieces (string size 4).
 
 
