@@ -31,13 +31,17 @@ BUG: if final character of string is not int, example: "be7\", will abort. check
 
 BUG: KingNotInCheckAfterMove() for en passant? maybe overload the function
 
+BUG: e4 f5 ef5 g6 fg6 h5 g7 nh6 "Another knight found"
 Fixed bugs:
 BUG: After e4 e5 nf3 nf6 bc4 bc5 rg1, the a-rook moves to g1 instead of the h-rook. FIXED
 
+BUG: check that all str.substr() are working. Note that second argument is string LENGTH, not the upper index
 Cleaning up code:
 Turn color_multiplier if/else into one line using ternary operator
 Remove redundancies: could move similar code from individual MovePiece() functions back into move? for example, col_specified, row_specified, and square_specified code is the same
 IsCapturable() is addressed in IsLegalSquare(). Call it in there, and edit other code as necessary. May not have to check if capturable because IsLegalSquare() has already been called, so delete redundancies.
+
+Call AddPiece() in constructor. Overload it to take an argument bool white_move.
 
 Complete:
 Added last_moved_pawn for en passant. ALWAYS set this to nullptr after every move unless the move was a pawn moving 2 squares.

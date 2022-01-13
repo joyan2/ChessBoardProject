@@ -60,11 +60,40 @@ bool Board::Move(string move) {
         if(move_success) last_moved_pawn = nullptr;
         return move_success;
     }
-    //If last 2 chars are '=' and a valid piece, try promoting pawn:
-    if(move.size() >= 4 && CanPromoteInto(move.at(move.size()-1)) && move.at(move.size()-2) == '=') {
-        bool move_success = PromotePawn(move);
-        if(move_success) last_moved_pawn = nullptr;
-        return move_success;
+    //If last 2 chars are '=' and a valid piece, try promoting pawn
+    //Must be from a valid col to be a pawn move
+    if(move.size() >= 4 && IsValidCol(move.at(0)) && CanPromoteInto(move.at(move.size()-1)) && move.at(move.size()-2) == '=') {
+        std::cout << "Try promoting" << '\n';
+        string movepawn_input = "";
+        //Pawn captures to promotion
+        if(toupper(move.at(1)) == 'X') {
+            //Example: exd8=Q
+            if(move.size() != 6) return false;
+            string second_half = move.substr(2);
+            string square = second_half.substr(0, 2);
+            if(!isLegalSquare(square)) return false;
+            move = move.substr(0, 1);
+            move += second_half;
+            movepawn_input = move.substr(0,3); //movepawn input is 3 chars long
+        }
+        //If no x was removed, MovePawn() argument will be 2 chars long:
+        if(movepawn_input.size() != 3) {
+            movepawn_input = move.substr(0,2);
+        }
+        std::cout << "MovePawn() input: " <<movepawn_input <<std::endl;
+        bool pawn_move_success = MovePawn(movepawn_input);
+        if(pawn_move_success) last_moved_pawn = nullptr;
+        //If pawn moved successfully, should be 
+        if(pawn_move_success) {
+            std::cout << "Pawn move success" << '\n';
+            string destination_square = move.substr(1, 2);
+            std::cout << "destination square: " <<destination_square <<'\n';
+            char promote_to_piece = move.at(move.size()-1);
+            std::cout << "Promote to: " << promote_to_piece << '\n';
+            return PromotePawn(destination_square, promote_to_piece);
+        }
+        
+        return false;
     }
     string square = move.substr(move.size()-2);
     if(!isLegalSquare(square)) return false;
@@ -74,7 +103,7 @@ bool Board::Move(string move) {
         std::cout << "x detected" << '\n';
         //For en passant and pawn captures:
         if(move.size() == 4 && IsValidCol(move.at(0))) {
-            std::cout << "reached ";
+            std::cout << "reached en passant/pawn captures";
             string destination = square;
             int color_multiplier = white_move ? 1 : (-1);
             char row = destination.at(destination.size() - 2);
@@ -96,8 +125,12 @@ bool Board::Move(string move) {
                 } else {
                     return false;
                 }
-            }
-
+            }  else if(IsCapturable(square)) {
+                    std::cout << "pawn can capture on x rank: " << move << '\n';
+                    move = move.substr(0, move.size()-3);
+                    move += square;
+                }
+        }
         //For other pieces:
         else if(IsCapturable(square)) {
             //Remove the 'x' from move:
@@ -106,7 +139,6 @@ bool Board::Move(string move) {
             std::cout << "move without x: " << move << '\n';
         } else {
             return false;
-        }
         }
     }
     if(toupper(move.at(0)) == 'N') {
@@ -182,6 +214,7 @@ bool Board::MovePawn(string destination) {
         } else {
             vector<Piece>* matching_pieces = piece_map[pawn*color_multiplier];
             for(int i = 0; i < matching_pieces->size(); i++) {
+                std::cout << "Capturing with pawn " << std::endl;
                 Piece* p = &matching_pieces->at(i);
                 if(!IsSpecifiedCol(p->square, destination.at(0))) continue;
                 std::cout << "Reached line " << __LINE__ << std::endl;
@@ -231,7 +264,7 @@ bool Board::MovePawn(string destination) {
             }
         }
         //Rest of cases:
-        if(col != 4 && col >= 3 && col <=7) {
+        if(col != 4 && col >= 3 && col <=8) {
             vector<Piece>* matching_pieces = piece_map[pawn];
             for(int i = 0; i < matching_pieces->size(); i++) {
                 Piece* p = &matching_pieces->at(i);
@@ -282,7 +315,7 @@ bool Board::MovePawn(string destination) {
             }
         }
         //Rest of cases:
-        if(col != 5 && col >= 2 && col <=6) {
+        if(col != 5 && col >= 1 && col <=6) {
             vector<Piece>* matching_pieces = piece_map[-pawn];
             for(int i = 0; i < matching_pieces->size(); i++) {
                 Piece* p = &matching_pieces->at(i);
@@ -1557,7 +1590,38 @@ bool Board::CanEnPassant(string destination) {
     }
     return false;
 }
-bool Board::PromotePawn(string destination) {
+bool Board::PromotePawn(string destination, char promote_to_piece) {
+    //Having already moved pawn, the pawn should be at string destination. So,
+    //change it to the piece specified.
+    //Since private function, there must be a pawn at destination.
+    //First, change move back because MovePawn() updated whose turn to move:
+    if(white_move) {
+        white_move = false;
+    } else {
+        white_move = true;
+    }
+    char row = destination.at(destination.size() - 2);
+    int col = std::stoi(destination.substr(destination.size() - 1));
+    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
+    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    int color_multiplier = white_move ? 1 : (-1);
+    vector<Piece>* matching_pieces = piece_map[color_multiplier*pawn];
+    for(int i = 0; i < matching_pieces->size(); i++) {
+        Piece* p = &matching_pieces->at(i);
+        if(p->square == destination_square) {
+            std::cout << "Pawn squares matches " << p->square << '\n';
+            int ipiece = PieceToInt(promote_to_piece);
+            ipiece *= color_multiplier;
+            AddPiece(ipiece, destination_square);
+            break;
+        }
+    }
+    //Change to_move back
+    if(white_move) {
+        white_move = false;
+    } else {
+        white_move = true;
+    }
     return false;
 }
 bool Board::IsValidCol(char col) {
@@ -1580,4 +1644,28 @@ bool Board::IsSpecifiedRow(int square, char row) {
     int irow = row - '0';
     //user-specified row will be 1 to 8, so subtract 1:
     return square / 8 == irow -1 ;
+}
+
+int Board::PieceToInt(char piece) {
+    switch(piece) {
+        case 'N':
+            return 2;
+        case 'B':
+            return 3;
+        case 'Q':
+            return 9;
+        case 'R':
+            return 5;
+        default:
+            return -11;
+    }
+}
+
+void Board::AddPiece(int piece_value, int square) {
+    Piece p;
+    p.piece = piece_value;
+    p.is_white = white_move;
+    p.square = square;
+    board_[square%8][square/8] = piece_value;
+    piece_map.at(piece_value)->push_back(p);
 }

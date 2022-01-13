@@ -43,7 +43,7 @@ public:
     Board();
     bool Move(string move);
     bool MovePawn(string destination);
-    bool PromotePawn(string destination);
+    bool PromotePawn(string destination, char promote_to_piece);
     bool MoveKnight(string destination);
     bool MoveBishop(string destination);
     bool MoveRook(string destination);
@@ -111,11 +111,15 @@ private:
     void RemovePiece(int square);
     //Moves piece from source (piece's current square) to destination.
     void UpdatePiece(Piece* piece, int destination_square);
+    //Adds a piece to the specified square. Assume the square is empty.
+    void AddPiece(int piece_value, int square);
     //Store whose turn to move.
     bool white_move;
 
     //Helper function: checks if a char is equal to 'Q', 'R,' 'B', or 'N'
     bool CanPromoteInto(char piece);
+    //Helper function: converts a char to the equivalent piece value (positive).
+    int PieceToInt(char piece);
     //Checks if a char tolower is between 'a' and 'h' inclusive.
     bool IsValidCol(char col);
     //Checks if a char to int is between 1 and 9 inclusive.
