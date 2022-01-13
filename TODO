@@ -1,7 +1,6 @@
 In Progress:
 
-Add pawn captures DONE
-BUG: e4 f5 exf5 g6 fxg6 hxg6 the white h-pawn is missing, and black doesn't capture. FIXED: forgot color_multiplier for piece_map[pawn]
+
 
 Update MovePiece() logic to allow [source_square][destination_square] format for all pieces (string size 4).
 Add in PGN file reading now for easier testing
@@ -31,8 +30,10 @@ BUG: if final character of string is not int, example: "be7\", will abort. check
 
 BUG: KingNotInCheckAfterMove() for en passant? maybe overload the function
 
-BUG: e4 f5 ef5 g6 fg6 h5 g7 nh6 "Another knight found"
+
 Fixed bugs:
+BUG: e4 f5 ef5 g6 fg6 h5 g7 nh6 "Another knight found"FIXED: wrap-around for rows not accounted for (ex: 15+10 wraps around from h-file to b-file)
+
 BUG: After e4 e5 nf3 nf6 bc4 bc5 rg1, the a-rook moves to g1 instead of the h-rook. FIXED
 
 BUG: check that all str.substr() are working. Note that second argument is string LENGTH, not the upper index
@@ -44,6 +45,8 @@ IsCapturable() is addressed in IsLegalSquare(). Call it in there, and edit other
 Call AddPiece() in constructor. Overload it to take an argument bool white_move.
 
 Complete:
+Add pawn captures DONE
+BUG: e4 f5 exf5 g6 fxg6 hxg6 the white h-pawn is missing, and black doesn't capture. FIXED: forgot color_multiplier for piece_map[pawn]
 Added last_moved_pawn for en passant. ALWAYS set this to nullptr after every move unless the move was a pawn moving 2 squares.
 
 Add castling, making sure that king is never in check

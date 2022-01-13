@@ -609,12 +609,19 @@ void Board::UpdatePiece(Piece* piece, int destination_square) {
 }
 
 bool Board::FromKnightMoves(int source_square, int destination_square) {
-    if(source_square + 15 == destination_square || source_square - 15 == destination_square
-    || source_square + 17 == destination_square || source_square - 17 == destination_square
-    || source_square + 6 == destination_square || source_square - 6 == destination_square
-    || source_square + 10 == destination_square || source_square - 10 == destination_square) {
+    //Use of modulo: only need to ensure the resulting knight move does not wrap around rows, since will never
+    //wrap around columns.
+    if((source_square + 15 == destination_square && (source_square+15)%8 == source_square%8 - 1) 
+    || (source_square - 15 == destination_square && (source_square-15)%8 == source_square%8 + 1)
+    || (source_square + 17 == destination_square && (source_square+17)%8 == source_square%8 + 1)
+    || (source_square - 17 == destination_square && (source_square-17)%8 == source_square%8 - 1)
+    || (source_square + 6 == destination_square && (source_square+6)%8 == source_square%8 - 2) 
+    || (source_square - 6 == destination_square && (source_square-6)%8 == source_square%8 + 2)
+    || (source_square + 10 == destination_square && (source_square+10)%8 == source_square%8 + 2) 
+    || (source_square - 10 == destination_square && (source_square-10)%8 == source_square%8 - 2)) {
         return true;
     }
+
     return false;
 }
 bool Board::FromBottom(int source_square, int destination_square)  {
