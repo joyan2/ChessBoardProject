@@ -86,7 +86,7 @@ bool Board::Move(string move) {
         //If pawn moved successfully, should be 
         if(pawn_move_success) {
             std::cout << "Pawn move success" << '\n';
-            string destination_square = move.substr(1, 2);
+            string destination_square = movepawn_input.substr(0, 2);
             std::cout << "destination square: " <<destination_square <<'\n';
             char promote_to_piece = move.at(move.size()-1);
             std::cout << "Promote to: " << promote_to_piece << '\n';

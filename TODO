@@ -1,10 +1,10 @@
 In Progress:
 
-Add pawn captures
+Add pawn captures DONE
 BUG: e4 f5 exf5 g6 fxg6 hxg6 the white h-pawn is missing, and black doesn't capture. FIXED: forgot color_multiplier for piece_map[pawn]
 
 Update MovePiece() logic to allow [source_square][destination_square] format for all pieces (string size 4).
-
+Add in PGN file reading now for easier testing
 
 
 To do after updating PGN reading to include 'x' and multiple possible pieces to same square:
@@ -14,10 +14,10 @@ color_multiplier*8 for pawn moving forward 1 square
 color_multiplier*16 for pawn moving forward 2 squares
 color_multiplier*7 and color_multiplier * 9 for pawn captures
 
-Add pawn promotions
+Add pawn promotions DONE
 Add storage of all previous board states using linked list
 Add en passant: need to store the previous move, with true/false if pawn moved two squares. If square where pawn captures is blank, but
-an "x" is given in the PGN notation, check if en passant is available.
+an "x" is given in the PGN notation, check if en passant is available. DONE
 
 Add checkmate and stalemate rules
 
