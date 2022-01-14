@@ -1676,3 +1676,66 @@ void Board::AddPiece(int piece_value, int square) {
     board_[square%8][square/8] = piece_value;
     piece_map.at(piece_value)->push_back(p);
 }
+
+void Board::UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board) {
+    vector<Piece> white_pawns;
+    vector<Piece> white_bishops;
+    vector<Piece> white_knights;
+    vector<Piece> white_rooks;
+    vector<Piece> white_queens;
+    vector<Piece> black_pawns;
+    vector<Piece> black_knights;
+    vector<Piece> black_bishops;
+    vector<Piece> black_rooks;
+    vector<Piece> black_queens;
+    for(int i = 0; i < 8; i++ ) {
+        for(int j = 0; j < 8; j ++) {
+            switch(board[i][j]) {
+                case 0:
+                    //std::cout << " 0 ";
+                    break;
+                case 1: 
+                    Piece p;
+                    p.piece = pawn;
+                    p.is_white = true;
+                    p.square = 8 + i;
+                    white_pawns.push_back(p);
+                    break;
+                case 2:
+                    std::cout << " N ";
+                    break;
+                case 3: 
+                    std::cout << " B ";
+                    break;
+                case 5:
+                    std::cout << " R ";
+                    break;
+                case 9: 
+                    std::cout << " Q ";
+                    break;
+                case 10:
+                    std::cout << " K ";
+                    break;
+                case -1: 
+                    std::cout << "-P ";
+                    break;
+                case -2:
+                    std::cout << "-N ";
+                    break;
+                case -3: 
+                    std::cout << "-B ";
+                    break;
+                case -5:
+                    std::cout << "-R ";
+                    break;
+                case -9: 
+                    std::cout << "-Q ";
+                    break;
+                case -10:
+                    std::cout << "-K ";
+                    break;
+            }
+        }
+        std::cout << '\n';
+    }
+}

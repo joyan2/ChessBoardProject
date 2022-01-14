@@ -155,6 +155,7 @@ private:
     bool CheckFromLeft(int square, std::array<std::array<int, 8>, 8> &board);
     bool CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board);
 
+    void UpdateMap
     //Pointer to last moved pawn. Used to simplify en passant logic
     Piece* last_moved_pawn;
 };
