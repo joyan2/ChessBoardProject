@@ -42,7 +42,10 @@ BUG: e4 f5 ef5 g6 fg6 h5 g7 nh6 "Another knight found"FIXED: wrap-around for row
 BUG: After e4 e5 nf3 nf6 bc4 bc5 rg1, the a-rook moves to g1 instead of the h-rook. FIXED
 
 BUG: check that all str.substr() are working. Note that second argument is string LENGTH, not the upper index
+
 Cleaning up code:
+Turn the 6 bools for castling into 4: white_can_kingside_castle, white_can_queenside_castle, black_can_kingside_castle, black_can_queenside_castle
+
 Turn color_multiplier if/else into one line using ternary operator
 Remove redundancies: could move similar code from individual MovePiece() functions back into move? for example, col_specified, row_specified, and square_specified code is the same
 IsCapturable() is addressed in IsLegalSquare(). Call it in there, and edit other code as necessary. May not have to check if capturable because IsLegalSquare() has already been called, so delete redundancies.

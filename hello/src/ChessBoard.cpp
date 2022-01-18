@@ -1,4 +1,3 @@
-
 #include "ChessBoard.h"
 #include <iostream>
 #include <iterator>
@@ -43,7 +42,10 @@ bool Board::Move(string move) {
             black_king_moved_ = true;
             black_hrook_moved_ = true;
         }
-        if(move_success) last_moved_pawn = nullptr;
+        if(move_success) {
+            last_moved_pawn = nullptr;
+            move_++;
+        }
         return move_success;
     }
     std::cout << "Reached line " << __LINE__ << std::endl;
@@ -57,7 +59,10 @@ bool Board::Move(string move) {
             black_king_moved_ = true;
             black_arook_moved_ = true;
         }
-        if(move_success) last_moved_pawn = nullptr;
+        if(move_success) {
+            last_moved_pawn = nullptr;
+            move_++;
+        }
         return move_success;
     }
     //If last 2 chars are '=' and a valid piece, try promoting pawn
@@ -90,7 +95,10 @@ bool Board::Move(string move) {
             std::cout << "destination square: " <<destination_square <<'\n';
             char promote_to_piece = move.at(move.size()-1);
             std::cout << "Promote to: " << promote_to_piece << '\n';
-            return PromotePawn(destination_square, promote_to_piece);
+            if(PromotePawn(destination_square, promote_to_piece) == true) {
+                move_++;
+                return true;
+            }
         }
         
         return false;
@@ -144,19 +152,31 @@ bool Board::Move(string move) {
     if(toupper(move.at(0)) == 'N') {
         std::cout << "Moving knight" << '\n';
         bool move_success = MoveKnight(move.substr(1));
-        if(move_success) last_moved_pawn = nullptr;
+        if(move_success) {
+            last_moved_pawn = nullptr;
+            move_++;
+        }
         return move_success;
     } else if(toupper(move.at(0)) == 'B') {
         bool move_success = MoveBishop(move.substr(1));
-        if(move_success) last_moved_pawn = nullptr;
+        if(move_success) {
+            last_moved_pawn = nullptr;
+            move_++;
+        }
         return move_success;
     } else if(toupper(move.at(0)) == 'R') {
         bool move_success = MoveRook(move.substr(1));
-        if(move_success) last_moved_pawn = nullptr;
+        if(move_success) {
+            last_moved_pawn = nullptr;
+            move_++;
+        }
         return move_success;
     } else if(toupper(move.at(0)) == 'Q') {
         bool move_success = MoveQueen(move.substr(1));
-        if(move_success) last_moved_pawn = nullptr;
+        if(move_success) {
+            last_moved_pawn = nullptr;
+            move_++;
+        }
         return move_success;
     } else if(toupper(move.at(0)) == 'K') {
         bool king_moved = MoveKing(move.substr(1));
@@ -165,16 +185,27 @@ bool Board::Move(string move) {
         } else if (king_moved == true && white_move) {
             white_king_moved_ = true;
         }
-        if(king_moved) last_moved_pawn = nullptr;
+        if(king_moved) {
+            last_moved_pawn = nullptr;
+            move_++;
+        }
         return king_moved;
     } else if(move.size() == 3) {
         //Check that first move is between a-h. The other two chars are already
         //confirmed to be a legal square.
         if(IsValidCol(move.at(0))) {
-            return MovePawn(move);
+            bool move_success = MovePawn(move);
+            if(move_success) {
+                move_++;
+                return true;
+            }
         }
     } else if(move.size() == 2) {
-        return MovePawn(square);
+        bool move_success = MovePawn(square);
+        if(move_success) {
+            move_++;
+            return true;
+        }
     }
     return false;
 }
@@ -1313,6 +1344,7 @@ bool Board::CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board)
  * 
  */
 Board::Board() {
+    move_ = 0;
     white_pawns_.reserve(8);
     white_knights_.reserve(2);
     white_bishops_.reserve(2);
@@ -1453,6 +1485,63 @@ void Board::PrintRookAndKingHaveMoved() {
     std::cout << "Black king: " << black_king_moved_ << '\n';
     std::cout << "Black a-Rook: " << black_arook_moved_ << '\n';
     std::cout << "Black h-Rook: " << black_hrook_moved_ << '\n';
+}
+void Board::SavePosition() {
+    Position pos;
+    pos.board = board_;
+    pos.white_pawns = white_pawns_;
+    pos.white_bishops = white_bishops_;
+    pos.white_knights = white_knights_;
+    pos.white_rooks = white_rooks_;
+    pos.white_queens = white_queens_;
+    pos.white_king = white_king_;
+    pos.black_pawns = black_pawns_;
+    pos.black_knights = black_knights_;
+    pos.black_bishops = black_bishops_;
+    pos.black_rooks = black_rooks_;
+    pos.black_queens = black_queens_;
+    pos.black_king = black_king_;
+    pos.piece_map[pawn] = &pos.white_pawns;
+    pos.piece_map[knight] = &pos.white_knights;
+    pos.piece_map[bishop] = &pos.white_bishops;
+    pos.piece_map[rook] = &pos.white_rooks;
+    pos.piece_map[queen] = &pos.white_queens;
+    pos.piece_map[-pawn] = &pos.black_pawns;
+    pos.piece_map[-knight] = &pos.black_knights;
+    pos.piece_map[-bishop] = &pos.black_bishops;
+    pos.piece_map[-rook] = &pos.black_rooks;
+    pos.piece_map[-queen] = &pos.black_queens;
+    pos.piece_map[king] = &pos.white_king;
+    pos.piece_map[-king] = &pos.black_king;
+    //If no last moved pawn, set piece to 0
+    if(last_moved_pawn = nullptr) {
+        pos.last_moved_pawn.piece = 0;
+    } else {
+        pos.last_moved_pawn.is_white = last_moved_pawn->is_white;
+        pos.last_moved_pawn.piece = last_moved_pawn->piece;
+        pos.last_moved_pawn.square = last_moved_pawn->square;
+    }
+    pos.white_move = white_move;
+    //In check:
+    pos.white_in_check = white_in_check_;
+    pos.black_in_check = black_in_check_;
+    //Castling:
+    pos.white_king_moved = white_king_moved_;
+    pos.black_king_moved = black_king_moved_;
+    pos.white_arook_moved = white_arook_moved_;
+    pos.white_hrook_moved = white_hrook_moved_;
+    pos.black_arook_moved = black_arook_moved_;
+    pos.black_hrook_moved = black_hrook_moved_;
+    positions_.push_back(pos);
+    pos.move = move_;
+}
+void Board::LoadPosition(int idx) {
+    if(idx < 0 || idx >= positions_.size()) return;
+    std::list<Position>::iterator itr;
+    for(itr = positions_.begin(); itr != positions_.end(); itr++) {
+        
+    }
+
 }
 void Board::PrintPieces() {
     for(auto i = piece_map.begin(); i!= piece_map.end(); i++) {
@@ -1677,6 +1766,7 @@ void Board::AddPiece(int piece_value, int square) {
     piece_map.at(piece_value)->push_back(p);
 }
 
+/*
 void Board::UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board) {
     vector<Piece> white_pawns;
     vector<Piece> white_bishops;
@@ -1739,3 +1829,4 @@ void Board::UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board) {
         std::cout << '\n';
     }
 }
+*/

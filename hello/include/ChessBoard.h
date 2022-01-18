@@ -37,11 +37,47 @@ struct Piece {
     //To get column from 0-7, do square / 8. 
     //To get row from 0-7, do square % 8.
 };
+//Position with a board_[][] representation, as well as all necessary bool values
+struct Position {
+    std::array<std::array<int, 8>, 8> board;
+    //Map of pieces:
+    std::unordered_map<int, vector<Piece>*> piece_map;
+    vector<Piece> white_pawns;
+    vector<Piece> white_bishops;
+    vector<Piece> white_knights;
+    vector<Piece> white_rooks;
+    vector<Piece> white_queens;
+    vector<Piece> white_king;
+    vector<Piece> black_pawns;
+    vector<Piece> black_knights;
+    vector<Piece> black_bishops;
+    vector<Piece> black_rooks;
+    vector<Piece> black_queens;
+    vector<Piece> black_king;
+    
+    Piece last_moved_pawn; //A copy, not a pointer
+    bool white_move;
+    //In check:
+    bool white_in_check;
+    bool black_in_check;
+    //Castling:
+    bool white_king_moved;
+    bool black_king_moved;
+    bool white_arook_moved;
+    bool white_hrook_moved;
+    bool black_arook_moved;
+    bool black_hrook_moved;
+
+    //Move number:
+    int move;
+};
 
 class Board {
 public:
     Board();
     bool Move(string move);
+    void SavePosition(); //saves the current position in Position struct
+    void LoadPosition(int idx); //loads the position from saved positions
     bool MovePawn(string destination);
     bool PromotePawn(string destination, char promote_to_piece);
     bool MoveKnight(string destination);
@@ -155,7 +191,10 @@ private:
     bool CheckFromLeft(int square, std::array<std::array<int, 8>, 8> &board);
     bool CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board);
 
-    void UpdateMap
+    //void UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board);
     //Pointer to last moved pawn. Used to simplify en passant logic
     Piece* last_moved_pawn;
+    std::list<Position> positions_;
+
+    int move_;
 };
