@@ -79,6 +79,7 @@ public:
     bool Move(string move);
     void SavePosition(); //saves the current position in Position struct
     void LoadPosition(int move); //loads the position from saved positions
+    void LoadCurrentPosition(); //loads the final position in positions_
     bool MovePawn(string destination);
     bool PromotePawn(string destination, char promote_to_piece);
     bool MoveKnight(string destination);
@@ -198,4 +199,5 @@ private:
     vector<Position> positions_;
 
     int move_;
+    bool current_position; //tracks if at current position
 };

@@ -14,6 +14,11 @@ const int king = 10;
 const int ONE_COL = 8;
 const int ONE_ROW = 1;
 bool Board::Move(string move) {
+    //If not at current position (loaded previous), can't move until loading current position
+    if(current_position_ == false) {
+        LoadCurrentPosition();
+        std::cout << "Current position bool: " << current_position_ <<std::endl;
+    }
     if(white_in_check_) {
         std::cout << "White king in check" << '\n';
     }
@@ -1355,6 +1360,7 @@ bool Board::CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board)
  */
 Board::Board() {
     move_ = 0;
+    current_position_ = true;
     white_pawns_.reserve(8);
     white_knights_.reserve(2);
     white_bishops_.reserve(2);
@@ -1596,7 +1602,19 @@ void Board::LoadPosition(int move) {
         }
 
     }
+    //Update if at current position
+    if(move != positions_.size()-1) {
+        current_position_ = false;
+    } else {
+        current_position_ = true;
+    }
 
+}
+void Board::LoadCurrentPosition() {
+    LoadPosition(positions_.size()-1);
+}
+void Board::TakeBack() {
+    
 }
 void Board::PrintPieces() {
     for(auto i = piece_map.begin(); i!= piece_map.end(); i++) {

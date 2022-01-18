@@ -1,10 +1,11 @@
 In Progress:
 
-Create a LoadPosition() function that takes an array[][] representation of the board and updates all the pieces in the piece_map accordingly. Will be used to load past moves. 
+Create a LoadPosition() function that takes an int move with the move number and goes back to it. All private variables in Board() are loaded back to the state at that position. DONE
 
-Update LoadPosition() with a bool (in Board class) that tracks if position is not on latest move. If so, cannot make another Move() until LoadCurrentPosition() is called (which just calls LoadPosition() at the last position in position_ vector)
+Update LoadPosition() with a bool (in Board class) that tracks if position is not on latest move. If so, LoadCurrentPosition() before making a move. DONE
 
-Create a linked list that adds a struct containing an array[][] and the private bool values (such as white_king_moved) for each move (How to solve last_moved_pawn? maybe store a copy rather than a pointer). Used to take back any number of moves.
+Add a counter for the 50-move rule for all non-pawn moves.
+Add a three-move repetition checker after every move.
 
 Create a TakeBack() and a TakeBack(int move) function that takes back either one move, or the specified number of moves.
 
