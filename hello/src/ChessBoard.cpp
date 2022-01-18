@@ -1362,6 +1362,7 @@ bool Board::CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board)
 Board::Board() {
     move_ = 0;
     current_position_ = true;
+    fifty_move_counter_ = 0;
     white_pawns_.reserve(8);
     white_knights_.reserve(2);
     white_bishops_.reserve(2);

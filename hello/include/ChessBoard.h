@@ -115,7 +115,7 @@ public:
     void PrintSquares();
     
     void PrintVars(); //for debugging, print private variables
-    
+
     bool WhoseMove();
     //Added after integrating with Qt:
     //Checks if a square has an opponent's piece attacking it (all directions + knights)
@@ -202,7 +202,7 @@ private:
     //Pointer to last moved pawn. Used to simplify en passant logic
     Piece* last_moved_pawn;
     vector<Position> positions_;
-
+    int fifty_move_counter_;
     int move_;
     bool current_position_; //tracks if at current position
 };
