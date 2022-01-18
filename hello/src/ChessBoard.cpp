@@ -1614,7 +1614,12 @@ void Board::LoadCurrentPosition() {
     LoadPosition(positions_.size()-1);
 }
 void Board::TakeBack() {
-    
+    if(positions_.size() <= 1) {
+        std::cout << "Can't take back" << std::endl;
+        return;
+    }
+    LoadPosition(positions_.size()-2);
+    current_position_ = true;
 }
 void Board::PrintPieces() {
     for(auto i = piece_map.begin(); i!= piece_map.end(); i++) {

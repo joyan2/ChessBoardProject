@@ -46,6 +46,11 @@ int main() {
                 b.LoadPosition(std::stoi(move));
                 b.PrintBoard();
                 break;
+            case 't':
+                std::cout << "Taking back: " << '\n';
+                b.TakeBack();
+                b.PrintBoard();
+                break;
             default:
                 std::cout << "Try again" << std::endl;
                 break;
