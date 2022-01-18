@@ -81,7 +81,7 @@ public:
     void LoadPosition(int move); //loads the position from saved positions
     void LoadCurrentPosition(); //loads the final position in positions_
     void TakeBack();
-    
+    void TakeBack(int moves); //Takes back by a certain number of moves
     bool MovePawn(string destination);
     bool PromotePawn(string destination, char promote_to_piece);
     bool MoveKnight(string destination);
@@ -113,6 +113,9 @@ public:
     bool isLegalSquare(string square);
     void PrintBoard();
     void PrintSquares();
+    
+    void PrintVars(); //for debugging, print private variables
+    
     bool WhoseMove();
     //Added after integrating with Qt:
     //Checks if a square has an opponent's piece attacking it (all directions + knights)

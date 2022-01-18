@@ -18,6 +18,9 @@ int main() {
                 std::cin >> move;
                 b.Move(move);
                 break;
+            case 'v':
+                b.PrintVars();
+                break;
             case 'p':
                 b.PrintBoard();
                 break;
@@ -49,6 +52,13 @@ int main() {
             case 't':
                 std::cout << "Taking back: " << '\n';
                 b.TakeBack();
+                b.PrintBoard();
+                break;
+            case 'b':
+                std::cout << "Enter moves to take back: ";
+                move = "";
+                std::cin >> move;
+                b.TakeBack(std::stoi(move));
                 b.PrintBoard();
                 break;
             default:

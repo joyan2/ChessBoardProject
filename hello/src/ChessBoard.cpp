@@ -593,6 +593,7 @@ bool Board::MoveRook(string destination) {
 }
 void Board::RemovePiece(int square) {
     int piece_at_square = board_[square % 8][square / 8];
+    if(piece_at_square == 0) return;
     vector<Piece>* matching_pieces = piece_map[piece_at_square];
     if(piece_at_square != 0) {
         //Find the matching piece and remove it from the vector
@@ -1614,15 +1615,40 @@ void Board::LoadCurrentPosition() {
     LoadPosition(positions_.size()-1);
 }
 void Board::TakeBack() {
-    if(positions_.size() <= 1) {
+    TakeBack(1);
+}
+void Board::TakeBack(int moves) {
+    if(moves <= 0) return;
+    if(positions_.size() - moves <= 0) {
         std::cout << "Can't take back" << std::endl;
         return;
     }
-    LoadPosition(positions_.size()-2);
+    LoadPosition(positions_.size()-moves-1);
+    for(int i = 0; i < moves; i++) {
+        positions_.pop_back();
+    }
     current_position_ = true;
+}
+void Board::PrintVars() {
+    std::cout << "Size of positions_ vector: " << positions_.size() << std::endl;
+    std::cout << "At current position: " << current_position_ << std::endl;
+    PrintPieces();
+    std::cout << "Move number: " << move_ << std::endl;
+    int last_moved_square = -1;
+    if(last_moved_pawn != nullptr) {
+        last_moved_square = last_moved_pawn->square;
+    }
+    std::cout << "Last moved pawn square: " << last_moved_square << std::endl;
+    std::cout << "White in check: " << WhiteInCheck() << std::endl;
+    std::cout << "Black in check: " << BlackInCheck() << std::endl;
+    std::cout << "To move: " << WhoseMove() << std::endl;
+    std::cout << "Castling bools: " << white_king_moved_ << " " 
+    << black_king_moved_ << " " << white_arook_moved_ << " " << white_hrook_moved_ << " "
+    << black_arook_moved_ << " " << black_hrook_moved_ << std::endl;
 }
 void Board::PrintPieces() {
     for(auto i = piece_map.begin(); i!= piece_map.end(); i++) {
+        std::cout << "next " << i->first << std::endl;
         for(int j = 0; j < (i->second)->size(); j++) {
             std::cout << "piece: ";
             switch((i->second)->at(j).piece) {
