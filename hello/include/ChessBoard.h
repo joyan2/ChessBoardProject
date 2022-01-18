@@ -40,8 +40,8 @@ struct Piece {
 //Position with a board_[][] representation, as well as all necessary bool values
 struct Position {
     std::array<std::array<int, 8>, 8> board;
-    //Map of pieces:
-    std::unordered_map<int, vector<Piece>*> piece_map;
+    //Vectors of pieces:
+    //std::unordered_map<int, vector<Piece>*> piece_map;
     vector<Piece> white_pawns;
     vector<Piece> white_bishops;
     vector<Piece> white_knights;
@@ -55,7 +55,8 @@ struct Position {
     vector<Piece> black_queens;
     vector<Piece> black_king;
     
-    Piece last_moved_pawn; //A copy, not a pointer
+    //Use the square to avoid pointers:
+    int last_moved_pawn_square;
     bool white_move;
     //In check:
     bool white_in_check;
@@ -77,7 +78,7 @@ public:
     Board();
     bool Move(string move);
     void SavePosition(); //saves the current position in Position struct
-    void LoadPosition(int idx); //loads the position from saved positions
+    void LoadPosition(int move); //loads the position from saved positions
     bool MovePawn(string destination);
     bool PromotePawn(string destination, char promote_to_piece);
     bool MoveKnight(string destination);
@@ -194,7 +195,7 @@ private:
     //void UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board);
     //Pointer to last moved pawn. Used to simplify en passant logic
     Piece* last_moved_pawn;
-    std::list<Position> positions_;
+    vector<Position> positions_;
 
     int move_;
 };

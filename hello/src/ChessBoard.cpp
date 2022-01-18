@@ -45,6 +45,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            SavePosition();
         }
         return move_success;
     }
@@ -62,6 +63,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            SavePosition();
         }
         return move_success;
     }
@@ -97,6 +99,7 @@ bool Board::Move(string move) {
             std::cout << "Promote to: " << promote_to_piece << '\n';
             if(PromotePawn(destination_square, promote_to_piece) == true) {
                 move_++;
+                SavePosition();
                 return true;
             }
         }
@@ -155,6 +158,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            SavePosition();
         }
         return move_success;
     } else if(toupper(move.at(0)) == 'B') {
@@ -162,6 +166,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            SavePosition();
         }
         return move_success;
     } else if(toupper(move.at(0)) == 'R') {
@@ -169,6 +174,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            SavePosition();
         }
         return move_success;
     } else if(toupper(move.at(0)) == 'Q') {
@@ -176,6 +182,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            SavePosition();
         }
         return move_success;
     } else if(toupper(move.at(0)) == 'K') {
@@ -188,6 +195,7 @@ bool Board::Move(string move) {
         if(king_moved) {
             last_moved_pawn = nullptr;
             move_++;
+            SavePosition();
         }
         return king_moved;
     } else if(move.size() == 3) {
@@ -197,6 +205,7 @@ bool Board::Move(string move) {
             bool move_success = MovePawn(move);
             if(move_success) {
                 move_++;
+                SavePosition();
                 return true;
             }
         }
@@ -204,6 +213,7 @@ bool Board::Move(string move) {
         bool move_success = MovePawn(square);
         if(move_success) {
             move_++;
+            SavePosition();
             return true;
         }
     }
@@ -1477,6 +1487,7 @@ Board::Board() {
     black_arook_moved_ = false;
     black_hrook_moved_ = false;
     last_moved_pawn = nullptr;
+    SavePosition(); //save the starting position
 }
 void Board::PrintRookAndKingHaveMoved() {
     std::cout << "White king: " << white_king_moved_ << '\n';
@@ -1488,6 +1499,7 @@ void Board::PrintRookAndKingHaveMoved() {
 }
 void Board::SavePosition() {
     Position pos;
+    std::cout << "Reached line " << __LINE__ << std::endl;
     pos.board = board_;
     pos.white_pawns = white_pawns_;
     pos.white_bishops = white_bishops_;
@@ -1501,7 +1513,10 @@ void Board::SavePosition() {
     pos.black_rooks = black_rooks_;
     pos.black_queens = black_queens_;
     pos.black_king = black_king_;
-    pos.piece_map[pawn] = &pos.white_pawns;
+    std::cout << "Reached line " << __LINE__ << std::endl;
+    //Shouldn't need piece_map copy because piece_map in Board points to vectors, no matter
+    //how they're updated
+    /*pos.piece_map[pawn] = &pos.white_pawns;
     pos.piece_map[knight] = &pos.white_knights;
     pos.piece_map[bishop] = &pos.white_bishops;
     pos.piece_map[rook] = &pos.white_rooks;
@@ -1512,15 +1527,14 @@ void Board::SavePosition() {
     pos.piece_map[-rook] = &pos.black_rooks;
     pos.piece_map[-queen] = &pos.black_queens;
     pos.piece_map[king] = &pos.white_king;
-    pos.piece_map[-king] = &pos.black_king;
+    pos.piece_map[-king] = &pos.black_king;*/
     //If no last moved pawn, set piece to 0
-    if(last_moved_pawn = nullptr) {
-        pos.last_moved_pawn.piece = 0;
+    if(last_moved_pawn == nullptr) {
+        pos.last_moved_pawn_square = -1;
     } else {
-        pos.last_moved_pawn.is_white = last_moved_pawn->is_white;
-        pos.last_moved_pawn.piece = last_moved_pawn->piece;
-        pos.last_moved_pawn.square = last_moved_pawn->square;
+        pos.last_moved_pawn_square = last_moved_pawn->square;
     }
+    std::cout << "Reached line " << __LINE__ << std::endl;
     pos.white_move = white_move;
     //In check:
     pos.white_in_check = white_in_check_;
@@ -1532,14 +1546,55 @@ void Board::SavePosition() {
     pos.white_hrook_moved = white_hrook_moved_;
     pos.black_arook_moved = black_arook_moved_;
     pos.black_hrook_moved = black_hrook_moved_;
-    positions_.push_back(pos);
     pos.move = move_;
+    positions_.push_back(pos);
 }
-void Board::LoadPosition(int idx) {
-    if(idx < 0 || idx >= positions_.size()) return;
-    std::list<Position>::iterator itr;
-    for(itr = positions_.begin(); itr != positions_.end(); itr++) {
-        
+void Board::LoadPosition(int move) {
+    if(move < 0 || move >= positions_.size()) return;
+    Position* pos = &positions_.at(move);
+    board_ = pos->board;
+    white_pawns_ = pos->white_pawns;
+    white_bishops_ = pos->white_bishops;
+    white_knights_ = pos->white_knights;
+    white_rooks_ = pos->white_rooks;
+    white_queens_ = pos->white_queens;
+    white_king_ = pos->white_king;
+    black_pawns_ = pos->black_pawns;
+    black_knights_ = pos->black_knights;
+    black_bishops_ = pos->black_bishops;
+    black_rooks_ = pos->black_rooks;
+    black_queens_ = pos->black_queens;
+    black_king_ = pos->black_king;
+    white_move = pos->white_move;
+    white_in_check_ = pos->white_in_check;
+    black_in_check_ = pos->black_in_check;
+    white_king_moved_ = pos->white_king_moved;
+    black_king_moved_ = pos->black_king_moved;
+    white_arook_moved_ = pos->white_arook_moved;
+    white_hrook_moved_ = pos->white_hrook_moved;
+    black_arook_moved_ = pos->black_arook_moved;
+    black_hrook_moved_ = pos->black_hrook_moved;
+    move_ = move;
+    //Find the last moved pawn:
+    if(pos->last_moved_pawn_square == -1) {
+        last_moved_pawn = nullptr;
+    } else if(white_move) {
+        //Last moved pawn would be black
+        for(Piece &pawn : black_pawns_) {
+            if(pawn.square == pos->last_moved_pawn_square) {
+                last_moved_pawn = &pawn;
+                break;
+            }
+        }
+    } else {
+        //Last moved pawn would be white
+        for(Piece &pawn : white_pawns_) {
+            if(pawn.square == pos->last_moved_pawn_square) {
+                last_moved_pawn = &pawn;
+                break;
+            }
+        }
+
     }
 
 }

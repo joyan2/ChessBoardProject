@@ -1,6 +1,8 @@
 In Progress:
 
-Create an UpdateMapThroughBoard function that takes an array[][] representation of the board and updates all the pieces in the piece_map accordingly. Will be used to load past moves.
+Create a LoadPosition() function that takes an array[][] representation of the board and updates all the pieces in the piece_map accordingly. Will be used to load past moves. 
+
+Update LoadPosition() with a bool (in Board class) that tracks if position is not on latest move. If so, cannot make another Move() until LoadCurrentPosition() is called (which just calls LoadPosition() at the last position in position_ vector)
 
 Create a linked list that adds a struct containing an array[][] and the private bool values (such as white_king_moved) for each move (How to solve last_moved_pawn? maybe store a copy rather than a pointer). Used to take back any number of moves.
 
@@ -44,6 +46,8 @@ BUG: After e4 e5 nf3 nf6 bc4 bc5 rg1, the a-rook moves to g1 instead of the h-ro
 BUG: check that all str.substr() are working. Note that second argument is string LENGTH, not the upper index
 
 Cleaning up code:
+List vs vector for storing Positions
+
 Turn the 6 bools for castling into 4: white_can_kingside_castle, white_can_queenside_castle, black_can_kingside_castle, black_can_queenside_castle
 
 Turn color_multiplier if/else into one line using ternary operator

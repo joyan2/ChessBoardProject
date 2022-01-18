@@ -37,6 +37,15 @@ int main() {
             case 'c':
                 std::cout << "White in check: " << b.WhiteInCheck() << std::endl;
                 std::cout << "Black in check: " << b.BlackInCheck() << std::endl;
+                break;
+            case 'l':
+                std::cout << "Enter idx: ";
+                move = "";
+                std::cin >> move;
+                //Not error-checking for non-int inputs for now
+                b.LoadPosition(std::stoi(move));
+                b.PrintBoard();
+                break;
             default:
                 std::cout << "Try again" << std::endl;
                 break;
