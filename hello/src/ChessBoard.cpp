@@ -163,6 +163,12 @@ bool Board::Move(string move) {
             return false;
         }
     }
+    char p = toupper(move.at(0));
+    //If move size is 4, and first char is not a piece
+    if(move.size() == 4 && IsValidCol(p)) {
+
+    }
+    if(move.at(0))
     if(toupper(move.at(0)) == 'N') {
         std::cout << "Moving knight" << '\n';
         bool move_success = MoveKnight(move.substr(1));
@@ -1889,7 +1895,16 @@ bool Board::IsSpecifiedRow(int square, char row) {
     //user-specified row will be 1 to 8, so subtract 1:
     return square / 8 == irow -1 ;
 }
-
+int Board::SquareStrToInt(string square) {
+    if(square.size() != 2) return -1;
+    char col = square.at(0);
+    char row = square.at(1);
+    //If not valid coordinates, return -1
+    if(!IsValidCol(col) || !IsValidRow(row)) return -1;
+    int isquare = (row - '0') * 8;
+    isquare += col;
+    return isquare;
+}
 int Board::PieceToInt(char piece) {
     switch(piece) {
         case 'N':
@@ -1952,6 +1967,19 @@ bool Board::IsThreeMoveRepetition() {
                 if(count >= 3) return true;
         }
     }
+}
+
+bool Board::IsCheckmate() {
+    //First, make sure that the person to move is in check:
+    if(white_move && !white_in_check_) return false;
+    if(!white_move && !black_in_check_) return false;
+    if(white_move) {
+
+    }
+    return false;
+}
+bool Board::IsStalemate() {
+    return false;
 }
 /*
 void Board::UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board) {

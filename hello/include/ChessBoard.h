@@ -206,6 +206,11 @@ private:
      */
     bool game_end_;
     bool IsThreeMoveRepetition();
+    bool IsCheckmate(); //Checks that the person to move is in checkmate
+    bool IsStalemate();
+
+    //Converts a string of size 2 into the appropriate int square if possible, -1 otherwise
+    int SquareStrToInt(string square);
     //void UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board);
     //Pointer to last moved pawn. Used to simplify en passant logic
     Piece* last_moved_pawn;
