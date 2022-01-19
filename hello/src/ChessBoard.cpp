@@ -164,8 +164,9 @@ bool Board::Move(string move) {
         }
     }
     char p = toupper(move.at(0));
-    //If move size is 4, and first char is not a piece
-    if(move.size() == 4 && IsValidCol(p)) {
+    //If move size is 4, and each half is a valid square, move piece accordingly
+    if(move.size() == 4 && IsValidCol(p) && SquareStrToInt(move.substr(0,2)) != -1 && SquareStrToInt(move.substr(2)) != -1) {
+
 
     }
     if(move.at(0))
