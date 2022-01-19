@@ -61,6 +61,10 @@ int main() {
                 b.TakeBack(std::stoi(move));
                 b.PrintBoard();
                 break;
+            case 'd':
+                b.ClaimDraw();
+                b.PrintBoard();
+                break;
             default:
                 std::cout << "Try again" << std::endl;
                 break;

@@ -14,6 +14,7 @@ const int king = 10;
 const int ONE_COL = 8;
 const int ONE_ROW = 1;
 bool Board::Move(string move) {
+    if(game_end_) return false;
     //If not at current position (loaded previous), can't move until loading current position
     if(current_position_ == false) {
         LoadCurrentPosition();
@@ -1397,6 +1398,7 @@ bool Board::CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board)
  * 
  */
 Board::Board() {
+    game_end_ = false;
     move_ = 0;
     current_position_ = true;
     fifty_move_counter_ = 0;
@@ -1910,6 +1912,21 @@ void Board::AddPiece(int piece_value, int square) {
     piece_map.at(piece_value)->push_back(p);
 }
 
+bool Board::ClaimDraw() {
+    if(game_end_) return false;
+    if(fifty_move_counter_ >= 100) {
+        game_end_ = true;
+        std::cout << "Game end: fifty-move rule claimed. " << std::endl;
+        return true;
+    }
+    if(IsThreeMoveRepetition()) {
+        game_end_ = true;
+        std::cout << "Game end: repetition claimed. " << std::endl;
+        return true;
+    }
+    std::cout << "No draw. " << std::endl;
+    return false;
+}
 bool Board::IsThreeMoveRepetition() {
     //With std::array, can compare arrays with ==
     if(positions_.size() <= 2 || fifty_move_counter_ <= 2) return false;
@@ -1933,7 +1950,6 @@ bool Board::IsThreeMoveRepetition() {
                 if(count >= 3) return true;
         }
     }
-    return false;
 }
 /*
 void Board::UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board) {

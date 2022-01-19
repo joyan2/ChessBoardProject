@@ -115,7 +115,7 @@ public:
     void PrintSquares();
     
     void PrintVars(); //for debugging, print private variables
-
+    bool ClaimDraw(); //Claim a draw if three-move or fifty-move
     bool WhoseMove();
     //Added after integrating with Qt:
     //Checks if a square has an opponent's piece attacking it (all directions + knights)
@@ -204,6 +204,7 @@ private:
      * same squares, the same player has the move, the remaining castling rights are the same 
      * and the possibility to capture en passant is the same."
      */
+    bool game_end_;
     bool IsThreeMoveRepetition();
     //void UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board);
     //Pointer to last moved pawn. Used to simplify en passant logic
