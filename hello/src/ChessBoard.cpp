@@ -1183,7 +1183,6 @@ bool Board::isLegalSquare(string square) {
 bool Board::CheckFromBottomLeftDiag(int square, std::array<std::array<int, 8>, 8> &board) {
     std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square - 9;
-    int color_multiplier = 0;
     int color_multiplier = white_move ? (-1) : 1;
     std::cout << "Reached line " << __LINE__ << std::endl;
     if(i%8 == 0) return false; //If already on bottom left, no check possible
