@@ -401,10 +401,8 @@ bool Board::CanPromoteInto(char piece) {
     return (piece == 'Q' || piece == 'R' || piece == 'B' || piece == 'N');
 }
 bool Board::MoveKnight(string destination) {
-    char row = destination.at(destination.size() - 2);
-    int col = std::stoi(destination.substr(destination.size() - 1));
-    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
-    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    int destination_square = SquareStrToInt(destination.substr(destination.size()-2));
+    if(destination_square == -1) return false;
     int knight_color_multiplier = 0;
     if(white_move) {
         knight_color_multiplier = 1;
@@ -467,10 +465,8 @@ bool Board::MoveKnight(string destination) {
 }
 
 bool Board::MoveBishop(string destination) {
-    char row = destination.at(destination.size() - 2);
-    int col = std::stoi(destination.substr(destination.size() - 1));
-    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
-    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    int destination_square = SquareStrToInt(destination.substr(destination.size()-2));
+    if(destination_square == -1) return false;
     int bishop_color_multiplier = 0;
     if(white_move) {
         bishop_color_multiplier = 1;
@@ -544,10 +540,8 @@ bool Board::MoveBishop(string destination) {
 
 bool Board::MoveRook(string destination) {
     if(destination.size() > 3) return false; //not possible for Rook to have 2 squares specified. 
-    char row = destination.at(destination.size() - 2);
-    int col = std::stoi(destination.substr(destination.size() - 1));
-    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
-    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    int destination_square = SquareStrToInt(destination.substr(destination.size()-2));
+    if(destination_square == -1) return false;
     int rook_color_multiplier = 0;
     if(white_move) {
         rook_color_multiplier = 1;
@@ -783,10 +777,8 @@ bool Board::FromTopLeftDiag(int source_square, int destination_square) {
 
 
 bool Board::MoveQueen(string destination) {
-    char row = destination.at(destination.size() - 2);
-    int col = std::stoi(destination.substr(destination.size() - 1));
-    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
-    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    int destination_square = SquareStrToInt(destination.substr(destination.size()-2));
+    if(destination_square == -1) return false;
     int queen_color_multiplier = 0;
     if(white_move) {
         queen_color_multiplier = 1;
@@ -1073,19 +1065,12 @@ bool Board::BlackInCheck() {
     return black_in_check_;
 }
 bool Board::MoveKing(string destination) {
-    char row = destination.at(destination.size() - 2);
-    int col = std::stoi(destination.substr(destination.size() - 1));
-    int destination_row = toupper(row) - 'A' + 1; //Convert from letter to number, subtract 1
-    int destination_square = (col-1) * ONE_COL + (destination_row-1);
+    int destination_square = SquareStrToInt(destination.substr(destination.size()-2));
+    if(destination_square == -1) return false;
 
     //Check if destination square is not in check (even if capturing piece on that square)
     if(!NotInCheck(destination_square, board_)) return false;
-    int king_color_multiplier = 0;
-    if(white_move) {
-        king_color_multiplier = 1;
-    } else {
-        king_color_multiplier = -1;
-    }
+    int king_color_multiplier = white_move ? 1 : (-1);
     vector<Piece>* matching_pieces = piece_map[king_color_multiplier*king];
     //std::cout << matching_pieces->at(0).piece;
     Piece* p = &matching_pieces->at(0);
@@ -1112,12 +1097,7 @@ bool Board::KingNotInCheckAfterMove(int source_square, int destination_square, s
     board[destination_square%8][destination_square/8] = board[source_square%8][source_square/8];
     board[source_square%8][source_square/8] = 0;
     std::cout << "Reached line " << __LINE__ << std::endl;
-    int king_color_multiplier = 0;
-    if(white_move) {
-        king_color_multiplier = 1;
-    } else {
-        king_color_multiplier = -1;
-    }
+    int king_color_multiplier = white_move ? 1 : (-1);
     int king_square;
     //get location of player's King
     std::cout << "Reached line " << __LINE__ << std::endl;
@@ -1142,12 +1122,7 @@ bool Board::NotInCheck(int square, std::array<std::array<int, 8>, 8> &board) {
     knight_squares[5] = square - 6;
     knight_squares[6] = square + 10;
     knight_squares[7] = square - 10;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1; //Note this is opposite from others
     //Go through each knight square. If an opponent's knight is on square, return false
     for(int knight_square : knight_squares) {
         if(knight_square < 0 || knight_square > 63) continue;
@@ -1194,13 +1169,9 @@ bool Board::isLegalSquare(string square) {
         std::cout << "out of bounds";
         return false;
     }
-    int color_multiplier = 0;
     //Get the opposite color because that means piece is capturable
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
+
     int destination_square = board_[row_to_int-1][col-1];
     if(!(destination_square == 0 || destination_square == color_multiplier * pawn || destination_square == color_multiplier * bishop
     || destination_square == color_multiplier * knight || destination_square == color_multiplier * rook || destination_square == color_multiplier * queen)) {
@@ -1213,11 +1184,7 @@ bool Board::CheckFromBottomLeftDiag(int square, std::array<std::array<int, 8>, 8
     std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square - 9;
     int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
     std::cout << "Reached line " << __LINE__ << std::endl;
     if(i%8 == 0) return false; //If already on bottom left, no check possible
     while((i >= 0 && i <= 63) && i%8 >= 0) {
@@ -1236,12 +1203,7 @@ bool Board::CheckFromBottomLeftDiag(int square, std::array<std::array<int, 8>, 8
 bool Board::CheckFromTopRightDiag(int square, std::array<std::array<int, 8>, 8> &board) {
     std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square + 9;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
     if(i%8 == 7) return false; //If already on bottom right, no check possible
     while((i >= 0 && i <= 63) && i%8 <= 7) {
         //If same-color piece, can't be in check:
@@ -1257,12 +1219,7 @@ bool Board::CheckFromTopRightDiag(int square, std::array<std::array<int, 8>, 8> 
 bool Board::CheckFromBottomRightDiag(int square, std::array<std::array<int, 8>, 8> &board) {
     std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square - 7;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
     if(i%8 == 7) return false; //If already on bottom right, no check possible
     while((i >= 0 && i <= 63) && i%8 <= 7) {
         //If same-color piece, can't be in check:
@@ -1278,12 +1235,7 @@ bool Board::CheckFromBottomRightDiag(int square, std::array<std::array<int, 8>, 
 bool Board::CheckFromTopLeftDiag(int square, std::array<std::array<int, 8>, 8> &board) {
     std::cout << "Reached line " << __LINE__ << std::endl;
     int i = square + 7;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
     if(i%8 == 0) return false; //If already on top left, no check possible
     while((i >= 0 && i <= 63) && i%8 >= 0) {
         //If same-color piece, can't be in check:
@@ -1305,12 +1257,7 @@ bool Board::CheckFromBottom(int square, std::array<std::array<int, 8>, 8> &board
     std::cout << "square: " << square << '\n';
     int file = square % 8;
     int i = square - 8;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
     std::cout << "i: " << i <<'\n';
     std::cout << "file: " << file << '\n';
     while((i >= 0 && i <= 63) && i % 8 == file) {
@@ -1333,12 +1280,7 @@ bool Board::CheckFromTop(int square, std::array<std::array<int, 8>, 8> &board) {
     std::cout << "Reached line " << __LINE__ << std::endl;
     int file = square % 8;
     int i = square + 8;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
 
     while((i >= 0 && i <= 63) && i % 8 == file) {
         //If out of bounds, can't be in check:
@@ -1356,13 +1298,7 @@ bool Board::CheckFromLeft(int square, std::array<std::array<int, 8>, 8> &board) 
     std::cout << "Reached line " << __LINE__ << std::endl;
     int rank = square / 8;
     int i = square - 1;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
-
+    int color_multiplier = white_move ? (-1) : 1;
     while((i >= 0 && i <= 63) && i / 8 == rank) {
         //If out of bounds, can't be in check:
         if(i < 0 || i > 63) return false;
@@ -1382,12 +1318,7 @@ bool Board::CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board)
     std::cout << "Reached line " << __LINE__ << std::endl;
     int rank = square / 8;
     int i = square + 1;
-    int color_multiplier = 0;
-    if(white_move) {
-        color_multiplier = -1;
-    } else {
-        color_multiplier = 1;
-    }
+    int color_multiplier = white_move ? (-1) : 1;
 
     while((i >= 0 && i <= 63) && i / 8 == rank) {
         //If out of bounds, can't be in check:
