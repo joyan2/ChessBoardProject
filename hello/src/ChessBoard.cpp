@@ -35,7 +35,8 @@ bool Board::Move(string move) {
     //Depending on first character of string, move the specified piece
 
     std::cout << "Reached line " << __LINE__ << std::endl;
-    if(move == "0-0") {
+    if(move == "0-0" || (move == "e1g1" && white_king_.at(0).square == 4) 
+    || (move == "e8g8" && black_king_.at(0).square == 60)) {
         std::cout << "Reached line " << __LINE__ << std::endl;
         bool move_success = CastleKingside();
         std::cout << "Reached line " << __LINE__ << std::endl;
@@ -57,7 +58,8 @@ bool Board::Move(string move) {
         return move_success;
     }
     std::cout << "Reached line " << __LINE__ << std::endl;
-    if(move == "0-0-0") {
+    if(move == "0-0-0" || (move == "e1c1" && white_king_.at(0).square == 4) 
+    || (move == "e8c8" && black_king_.at(0).square == 60)) {
         std::cout << "Reached line " << __LINE__ << std::endl;
         bool move_success = CastleQueenside();
         if(move_success && !white_move) {
@@ -947,7 +949,7 @@ bool Board::MoveQueen(string destination) {
                 std::cout << "Reached line 2 " << __LINE__ << std::endl;
                 if(!KingNotInCheckAfterMove(p->square, destination_square, board)) return false;
                 if(possible_queen == true) {
-                    std::cout << "Another possible knight found at: ";
+                    std::cout << "Another possible queen found at: ";
                     std::cout << possible_piece->square << std::endl;;
                     return false;
                 } else {

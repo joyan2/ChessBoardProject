@@ -1,17 +1,35 @@
 In Progress:
 MOVING TO TRELLO: https://trello.com/b/e66aa8LL/work
+
+
+Update MovePiece() logic to allow [source_square][destination_square] format for all pieces (string size 4).
+UCI Protocol:
+Examples
+e2e4
+e7e5
+e1g1 (white short castling): note that e1g1 doesn't have to be castles. Only call CastleKingside() if white King is on e1.
+e7e8q (for promotion): can deal with later
+
+
+
+
+Add in PGN file reading now for easier testing
+
+
+
+
+
 Create a LoadPosition() function that takes an int move with the move number and goes back to it. All private variables in Board() are loaded back to the state at that position. DONE
 
 Update LoadPosition() with a bool (in Board class) that tracks if position is not on latest move. If so, LoadCurrentPosition() before making a move. DONE
 
-Add a counter for the 50-move rule for all non-pawn moves.
-Add a three-move repetition checker after every move.
+Add a counter for the 50-move rule for all non-pawn moves. DONE
+Add a three-move repetition checker. DONE
 
 Create a TakeBack() and a TakeBack(int move) function that takes back either one move, or the specified number of moves. DONE
 
 
-Update MovePiece() logic to allow [source_square][destination_square] format for all pieces (string size 4).
-Add in PGN file reading now for easier testing
+
 
 
 To do after updating PGN reading to include 'x' and multiple possible pieces to same square:
