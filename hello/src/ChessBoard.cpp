@@ -50,6 +50,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            fifty_move_counter_ = 0;
             SavePosition();
         }
         return move_success;
@@ -68,6 +69,7 @@ bool Board::Move(string move) {
         if(move_success) {
             last_moved_pawn = nullptr;
             move_++;
+            fifty_move_counter_ = 0;
             SavePosition();
         }
         return move_success;
@@ -105,6 +107,7 @@ bool Board::Move(string move) {
             if(PromotePawn(destination_square, promote_to_piece) == true) {
                 move_++;
                 SavePosition();
+                fifty_move_counter_ = 0;
                 return true;
             }
         }
@@ -192,9 +195,11 @@ bool Board::Move(string move) {
         return move_success;
     } else if(toupper(move.at(0)) == 'K') {
         bool king_moved = MoveKing(move.substr(1));
-        if(king_moved == true && !white_move) {
+        if(king_moved == true && !white_move && black_king_moved_ == false) {
+            fifty_move_counter_ = 0;
             black_king_moved_ = true;
-        } else if (king_moved == true && white_move) {
+        } else if (king_moved == true && white_move && white_king_moved_ == false) {
+            fifty_move_counter_ = 0;
             white_king_moved_ = true;
         }
         if(king_moved) {
@@ -211,6 +216,7 @@ bool Board::Move(string move) {
             if(move_success) {
                 move_++;
                 SavePosition();
+                fifty_move_counter_ = 0;
                 return true;
             }
         }
@@ -219,6 +225,7 @@ bool Board::Move(string move) {
         if(move_success) {
             move_++;
             SavePosition();
+            fifty_move_counter_ = 0;
             return true;
         }
     }
@@ -438,7 +445,12 @@ bool Board::MoveKnight(string destination) {
         }
     }
     if(possible_knight) {
-        RemovePiece(destination_square);
+        bool removed = RemovePiece(destination_square);
+        if(removed) {
+            fifty_move_counter_ = 0;
+        } else {
+            fifty_move_counter_++;
+        }
         UpdatePiece(possible_piece, destination_square);
         return true;
     }
@@ -509,7 +521,12 @@ bool Board::MoveBishop(string destination) {
         }
     }
     if(possible_bishop) {
-        RemovePiece(destination_square);
+        bool removed = RemovePiece(destination_square);
+        if(removed) {
+            fifty_move_counter_ = 0;
+        } else {
+            fifty_move_counter_++;
+        }
         UpdatePiece(possible_piece, destination_square);
         return true;
     }
@@ -585,15 +602,20 @@ bool Board::MoveRook(string destination) {
         
     }
     if(possible_rook) {
-        RemovePiece(destination_square);
+        bool removed = RemovePiece(destination_square);
+        if(removed) {
+            fifty_move_counter_ = 0;
+        } else {
+            fifty_move_counter_++; //Adds, but could become 0 again if UpdatePiece() notices a change in castling status
+        }
         UpdatePiece(possible_piece, destination_square);
         return true;
     }
     return false;
 }
-void Board::RemovePiece(int square) {
+bool Board::RemovePiece(int square) {
     int piece_at_square = board_[square % 8][square / 8];
-    if(piece_at_square == 0) return;
+    if(piece_at_square == 0) return false;
     vector<Piece>* matching_pieces = piece_map[piece_at_square];
     if(piece_at_square != 0) {
         //Find the matching piece and remove it from the vector
@@ -605,22 +627,27 @@ void Board::RemovePiece(int square) {
         }
         board_[square % 8][square / 8] = 0;
     }
+    return true;
 }
 void Board::UpdatePiece(Piece* piece, int destination_square) {
     //Update if rooks have moved from origin
     if(piece->piece == rook) {
-        if(piece->square == 7) {
+        if(piece->square == 7 && white_hrook_moved_ == false) {
+            fifty_move_counter_ = 0;
             white_hrook_moved_ = true;
         }
-        if(piece->square == 0) {
+        if(piece->square == 0 && white_arook_moved_ == false) {
+            fifty_move_counter_ = 0;
             white_arook_moved_ = true;
         }
     }
     if(piece->piece == -rook) {
-        if(piece->square == 63) {
+        if(piece->square == 63 && black_hrook_moved_ == false) {
+            fifty_move_counter_ = 0;
             black_hrook_moved_ = true;
         }
-        if(piece->square == 56) {
+        if(piece->square == 56 && black_arook_moved_ == false) {
+            fifty_move_counter_ = 0;
             black_arook_moved_ = true;
         }
     }
@@ -931,7 +958,12 @@ bool Board::MoveQueen(string destination) {
 
     }
     if(possible_queen) {
-        RemovePiece(destination_square);
+        bool removed= RemovePiece(destination_square);
+        if(removed) {
+            fifty_move_counter_ = 0;
+        } else {
+            fifty_move_counter_++;
+        }
         UpdatePiece(possible_piece, destination_square);
         return true;
     }
@@ -1051,8 +1083,13 @@ bool Board::MoveKing(string destination) {
     if(p->square - 1 == destination_square || p->square + 1 == destination_square || p->square + 7 == destination_square
     || p->square - 7 == destination_square || p->square + 8 == destination_square || p->square - 8 == destination_square
     || p->square + 9 == destination_square || p->square - 9 == destination_square) {
-        RemovePiece(destination_square);
+        bool removed = RemovePiece(destination_square);
         UpdatePiece(p, destination_square);
+        if(removed) {
+            fifty_move_counter_ = 0;
+        } else {
+            fifty_move_counter_++; //Could change in Move() function if a bool was updated
+        }
         return true;
     }
     
@@ -1646,6 +1683,8 @@ void Board::PrintVars() {
     std::cout << "Castling bools: " << white_king_moved_ << " " 
     << black_king_moved_ << " " << white_arook_moved_ << " " << white_hrook_moved_ << " "
     << black_arook_moved_ << " " << black_hrook_moved_ << std::endl;
+    std::cout << "Fifty move rule: " << fifty_move_counter_ << std::endl;
+    std::cout << "Three-move: " << IsThreeMoveRepetition() << std::endl;
 }
 void Board::PrintPieces() {
     for(auto i = piece_map.begin(); i!= piece_map.end(); i++) {
@@ -1871,6 +1910,31 @@ void Board::AddPiece(int piece_value, int square) {
     piece_map.at(piece_value)->push_back(p);
 }
 
+bool Board::IsThreeMoveRepetition() {
+    //With std::array, can compare arrays with ==
+    if(positions_.size() <= 2 || fifty_move_counter_ <= 2) return false;
+    int count = 1;
+    int last_moved_pawn_square = -1;
+    if(last_moved_pawn != nullptr) {
+        last_moved_pawn_square = last_moved_pawn->square;
+    }
+    int end = 0;
+    if(positions_.size() - fifty_move_counter_ > 0) {
+        end = positions_.size() - fifty_move_counter_ ;
+    }
+    //Iterate backwards until last pawn move or capture has been reached (use 50-move counter)
+    for(int i = positions_.size()-2; i >= end; --i) {
+        Position* pos = &positions_.at(i);
+        if(board_ == pos->board && white_move == pos->white_move && last_moved_pawn_square == pos->last_moved_pawn_square &&
+            white_king_moved_ == pos->white_king_moved && black_king_moved_ == pos->black_king_moved &&
+            white_arook_moved_ == pos->white_arook_moved && white_hrook_moved_ == pos->white_hrook_moved &&
+            black_arook_moved_ == pos->black_arook_moved && black_hrook_moved_ == pos->black_hrook_moved) {
+                count++;
+                if(count >= 3) return true;
+        }
+    }
+    return false;
+}
 /*
 void Board::UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board) {
     vector<Piece> white_pawns;

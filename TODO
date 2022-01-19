@@ -1,5 +1,5 @@
 In Progress:
-
+MOVING TO TRELLO: https://trello.com/b/e66aa8LL/work
 Create a LoadPosition() function that takes an int move with the move number and goes back to it. All private variables in Board() are loaded back to the state at that position. DONE
 
 Update LoadPosition() with a bool (in Board class) that tracks if position is not on latest move. If so, LoadCurrentPosition() before making a move. DONE
@@ -7,7 +7,7 @@ Update LoadPosition() with a bool (in Board class) that tracks if position is no
 Add a counter for the 50-move rule for all non-pawn moves.
 Add a three-move repetition checker after every move.
 
-Create a TakeBack() and a TakeBack(int move) function that takes back either one move, or the specified number of moves.
+Create a TakeBack() and a TakeBack(int move) function that takes back either one move, or the specified number of moves. DONE
 
 
 Update MovePiece() logic to allow [source_square][destination_square] format for all pieces (string size 4).
@@ -22,7 +22,7 @@ color_multiplier*16 for pawn moving forward 2 squares
 color_multiplier*7 and color_multiplier * 9 for pawn captures
 
 Add pawn promotions DONE
-Add storage of all previous board states using linked list
+Add storage of all previous board states using vector DONE
 Add en passant: need to store the previous move, with true/false if pawn moved two squares. If square where pawn captures is blank, but
 an "x" is given in the PGN notation, check if en passant is available. DONE
 
@@ -48,6 +48,10 @@ BUG: check that all str.substr() are working. Note that second argument is strin
 
 Cleaning up code:
 List vs vector for storing Positions
+
+Store Position as a class? So can have operator= for 3-move repetition checking
+
+In IsThreeMoveRepetition(), only need to check board_ and white_move instead of every bool if fifty_move_counter_ is being properly updated
 
 Turn the 6 bools for castling into 4: white_can_kingside_castle, white_can_queenside_castle, black_can_kingside_castle, black_can_queenside_castle
 

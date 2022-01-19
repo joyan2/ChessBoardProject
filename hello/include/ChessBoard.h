@@ -151,7 +151,7 @@ private:
     bool white_in_check_;
     bool black_in_check_;
     //Removes the piece on that square from the board and from the appropriate vector.
-    void RemovePiece(int square);
+    bool RemovePiece(int square);
     //Moves piece from source (piece's current square) to destination.
     void UpdatePiece(Piece* piece, int destination_square);
     //Adds a piece to the specified square. Assume the square is empty.
@@ -197,12 +197,19 @@ private:
     bool CheckFromTop(int square, std::array<std::array<int, 8>, 8> &board);
     bool CheckFromLeft(int square, std::array<std::array<int, 8>, 8> &board);
     bool CheckFromRight(int square, std::array<std::array<int, 8>, 8> &board);
-
+    /**
+     * Checks the latest saved position. Goes backwards until 2 more identical positions
+     * have been found, or until castling booleans have changed, or until a pawn has moved.
+     * From Wikipedia: "Two positions are by definition "the same" if the same types of pieces occupy the 
+     * same squares, the same player has the move, the remaining castling rights are the same 
+     * and the possibility to capture en passant is the same."
+     */
+    bool IsThreeMoveRepetition();
     //void UpdateMapThroughBoard(std::array<std::array<int, 8>, 8> &board);
     //Pointer to last moved pawn. Used to simplify en passant logic
     Piece* last_moved_pawn;
     vector<Position> positions_;
-    int fifty_move_counter_;
+    int fifty_move_counter_; //Note: has to reach 100
     int move_;
     bool current_position_; //tracks if at current position
 };
